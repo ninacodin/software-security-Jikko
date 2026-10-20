@@ -1,0 +1,12 @@
+﻿docker : Unable to find image 'ghcr.io/gitleaks/gitleaks:latest' locally
+At line:4 char:1
++ docker run --rm -v "${repo}:/src" ghcr.io/gitleaks/gitleaks:latest di ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unable to find ...latest' locally:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+latest: Pulling from gitleaks/gitleaks
+Digest: sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+Status: Downloaded newer image for ghcr.io/gitleaks/gitleaks:latest
+[90m8:57AM[0m [32mINF[0m [1mscanned ~11168 bytes (11.17 KB) in 31.2ms[0m
+[90m8:57AM[0m [32mINF[0m [1mno leaks found[0m
