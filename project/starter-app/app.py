@@ -14,6 +14,7 @@ import hmac
 import os
 import sqlite3
 import subprocess
+from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt  # PyJWT
@@ -143,7 +144,9 @@ def login():
     con.close()
     if not row or not verify_pw(password, row["password"]):
         return "login failed", 401
-    tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
+    now = datetime.now(timezone.utc)
+    tok = jwt.encode({"sub": username, "iat": now, "exp": now + timedelta(hours=1)},
+                     SECRET, algorithm="HS256")
     resp = make_response(redirect("/"))
     resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
     return resp
