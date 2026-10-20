@@ -14,6 +14,7 @@ import hmac
 import os
 import sqlite3
 import subprocess
+from collections.abc import Mapping
 
 import jwt  # PyJWT
 from flask import Flask, request, jsonify, render_template_string, redirect, make_response
@@ -61,7 +62,8 @@ def seed():
     con = db()
     con.executescript(
         "DROP TABLE IF EXISTS users; DROP TABLE IF EXISTS notes;"
-        "CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT);"
+        "CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, "
+        "password TEXT NOT NULL, role TEXT NOT NULL);"
         "CREATE TABLE notes (id INTEGER PRIMARY KEY, owner TEXT, title TEXT, body TEXT);"
     )
     con.executemany("INSERT INTO users (username, password, role) VALUES (?,?,?)",
@@ -109,14 +111,24 @@ def home():
 
 @app.route("/register", methods=["POST"])
 def register():
-    username = request.form.get("username") or (request.json or {}).get("username")
-    password = request.form.get("password") or (request.json or {}).get("password")
-    role = request.form.get("role") or (request.json or {}).get("role") or "user"
+    data = request.get_json(silent=True) if request.is_json else request.form
+    if not isinstance(data, Mapping):
+        return jsonify(error="invalid registration data"), 400
+    username = data.get("username")
+    password = data.get("password")
+    if (not isinstance(username, str) or not username.strip()
+            or not isinstance(password, str) or not password):
+        return jsonify(error="username and password must be non-empty strings"), 400
     con = db()
-    con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
-                (username, hashlib.md5(password.encode()).hexdigest(), role))
-    con.commit()
-    con.close()
+    try:
+        # Public registration cannot grant a privileged role.
+        con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
+                    (username, hashlib.md5(password.encode()).hexdigest(), "user"))
+        con.commit()
+    except sqlite3.IntegrityError:
+        return jsonify(error="username already exists"), 409
+    finally:
+        con.close()
     return redirect("/")
 
 
