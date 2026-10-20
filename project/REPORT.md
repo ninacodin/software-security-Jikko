@@ -144,7 +144,7 @@ Branch: `remediation/auth-session-crypto`.
 + data = jwt.decode(tok, SECRET, algorithms=["HS256"])
 ```
 - **Why this fixes it:** removing `"none"` means an unsigned token is no longer a valid algorithm, so every token must carry a real HMAC signature made with the server key.
-- **Proof the exploit now fails:** `<!-- TODO: forged alg:none token now returns 401/no session -->`
+- **Proof the exploit now fails (verified):** forged token `eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9.` (`{"alg":"none"}` / `{"sub":"admin"}`, empty signature) sent as the `session` cookie — `GET /` renders the **login form** (unauthenticated) and `GET /admin` returns **`HTTP/1.0 403 FORBIDDEN`**. `<!-- optional: add screenshot -->`
 
 ### Fix for B2 — key from env, not baked in  · commit `caff106`
 ```diff
@@ -158,7 +158,7 @@ Branch: `remediation/auth-session-crypto`.
 + - APP_SECRET=${APP_SECRET:?set APP_SECRET in your shell before starting}
 ```
 - **Why this fixes it:** the key is no longer in source or image; it is injected at runtime and can be rotated. App fails closed at startup if it is missing.
-- **Proof:** `<!-- TODO: grep shows no secret in repo/image; app refuses to start without APP_SECRET -->`
+- **Proof (verified):** with `APP_SECRET` unset, `docker compose up` aborts: *"required variable APP_SECRET is missing a value: set APP_SECRET in your shell before starting"* — the app never starts with a default key.
 
 ### Fix for B3 — bcrypt instead of MD5  · commit `29a125e`
 ```diff
@@ -176,7 +176,7 @@ Branch: `remediation/auth-session-crypto`.
 ```
 - **Why this fixes it:** bcrypt adds a per-hash random salt and an adaptive work factor; `verify_pw` is constant-time. The login lookup is now parameterized (bcrypt hashes can't be matched in SQL), which also closes the injection in this one query.
 - **Note:** `bcrypt==4.2.1` added to `requirements.txt`.
-- **Proof:** `<!-- TODO: new DB rows show $2b$ bcrypt hashes; login still works -->`
+- **Proof (verified):** seeded rows now store `$2b$12$…` bcrypt hashes (not 32-hex MD5); `POST /login` alice/alicepw → `HTTP 302` (success), wrong password → `HTTP 401`.
 
 ### Fix for B4 — harden the session cookie  · commit `b576f57`
 ```diff
@@ -184,7 +184,7 @@ Branch: `remediation/auth-session-crypto`.
 + resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
 ```
 - **Why this fixes it:** `HttpOnly` blocks JS access, `Secure` restricts the cookie to HTTPS, `SameSite=Lax` mitigates CSRF.
-- **Proof:** `<!-- TODO: Set-Cookie header now shows the three flags -->`
+- **Proof (verified):** login response header — `Set-Cookie: session=…; Secure; HttpOnly; Path=/; SameSite=Lax`.
 
 ### Fix for B5 — expire session tokens  · commit `59132fa`
 ```diff
@@ -194,7 +194,7 @@ Branch: `remediation/auth-session-crypto`.
 +                  SECRET, algorithm="HS256")
 ```
 - **Why this fixes it:** tokens carry a 1-hour `exp`; `jwt.decode()` rejects expired tokens automatically, so a leaked token ages out.
-- **Proof:** `<!-- TODO: expired token rejected -->`
+- **Proof (verified):** issued token payload decodes to `{"sub":"alice","iat":1792487370,"exp":1792490970}` — `exp − iat = 3600 s` (1 hour).
 
 ---
 
