@@ -145,7 +145,7 @@ def login():
         return "login failed", 401
     tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
     resp = make_response(redirect("/"))
-    resp.set_cookie("session", tok)
+    resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
     return resp
 
 
