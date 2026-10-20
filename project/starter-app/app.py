@@ -231,4 +231,5 @@ def export():
 
 if __name__ == "__main__":
     seed()
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False,
+            use_debugger=False, use_reloader=False)
