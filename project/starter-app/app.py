@@ -202,7 +202,7 @@ def admin():
     if not user or role_of(user) != "admin":
         return "forbidden", 403
     con = db()
-    rows = con.execute("SELECT id,username,password,role FROM users").fetchall()
+    rows = con.execute("SELECT id,username,role FROM users").fetchall()
     con.close()
     return jsonify([dict(r) for r in rows])
 
