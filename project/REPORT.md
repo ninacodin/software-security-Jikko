@@ -1,8 +1,13 @@
 # Term Project Report — Secure Build
 
-> Working copy. Filled section-by-section per `REPORT-TEMPLATE.md`. Total **100 pts**.
-> **Assembly owner:** คน B — keeps §1 (Executive Summary) and §4 (Findings assembly) in sync.
-> `<!-- TODO -->` marks a slot a teammate still needs to fill.
+> Team report assembled per `REPORT-TEMPLATE.md`. Total **100 pts**.
+> **Assembly owner:** คน B — keeps §1 (Executive Summary) and §4 (Findings) in sync.
+>
+> **Status key:** ✅ done & verified-by-run · ✍️ drafted from code review, **owner must verify/remediate** · `<!-- TODO -->` not started.
+> Findings B1–B5 (auth/session/crypto) are fixed and tested. Everything marked ✍️ was
+> documented by the assembly owner from the source so the report is complete, but the
+> **named owner is responsible** for confirming reproduction, writing the fix, and signing
+> off their own section (per the peer-contribution rules).
 
 ## Cover
 
@@ -18,195 +23,310 @@
 
 | Tool | How it was used |
 |---|---|
-| Claude Code (Opus 4.8) | Reviewing the auth/session/crypto code, drafting the fixes on `remediation/auth-session-crypto`, and drafting §1/§4/§5 for those findings. All fixes reviewed by the team. |
-| `<!-- TODO: teammates add their tools -->` | |
+| Claude Code (Opus 4.8) | Reviewed the code, implemented & tested the auth/session/crypto fixes (B1–B5) on `remediation/auth-session-crypto`, and assembled this report (§1–§5 structure, finding write-ups). All fixes reviewed and run by the team. |
+| `<!-- TODO: teammates add their own tools -->` | |
 
 ---
 
 ## 1. Executive Summary
 
-*(DRAFT — numbers cover the auth/session/crypto workstream only; update totals once
-input-handling, access-control, supply-chain and container findings are merged.)*
+NoteVault is a small Flask web app + JSON API: users register / log in (cookie session),
+create and search their own notes, and there is an admin user list and an "export" endpoint.
+It works end-to-end but was built without a security review.
 
-NoteVault is a small Flask note-sharing web app + JSON API (register/login with a cookie
-session, per-user notes, search, an admin user list, and an export endpoint). A security
-review found vulnerabilities spanning input handling, access control, **sessions and
-cryptography**, dependencies, and container/build configuration.
+A review across the course's vulnerability classes found **13 issues** spanning input
+handling, access control, sessions & cryptography, dependencies, and container/build config.
 
-**Findings by severity (so far):**
+**Findings by severity:**
 
 | Severity | Count | Examples |
 |---|---|---|
-| Critical | 1 | JWT `alg:none` accepted → full admin impersonation |
-| High | 2 | Hard-coded signing key; unsalted MD5 password hashing |
-| Medium | 2 | Session cookie without security flags; session tokens never expire |
-| — | `<!-- TODO: + input-handling / access-control / supply-chain / container findings -->` | |
+| Critical | 2 | JWT `alg:none` → admin impersonation (B1); OS command injection in `/export` (I3) |
+| High | 6 | Hard-coded signing key (B2); unsalted MD5 passwords (B3); SQL injection in `/search` (I1); IDOR in `/api/notes` (A1); Flask `debug=True` (C1); vulnerable dependencies (S1) |
+| Medium | 5 | Cookie without security flags (B4); tokens never expire (B5); stored XSS in `/search` (I2); admin endpoint leaks password hashes (A2); container runs as root / unpinned base (C2) |
 
-**Risk before:** an unauthenticated attacker could forge an admin session token and take
-over the application; stored credentials were trivially crackable. **Risk after (this
-workstream):** session tokens are signed with a runtime-injected key, restricted to `HS256`,
-time-limited, and carried in a hardened cookie; passwords use bcrypt with per-hash salts.
+**Overall risk — before:** an unauthenticated attacker could forge an admin token (B1) or
+run shell commands on the server (I3) for full compromise; stored credentials were trivially
+crackable (B3). **After (auth/session/crypto workstream complete):** session tokens are
+signed with a runtime-injected key, restricted to `HS256`, time-limited and carried in a
+hardened cookie; passwords use bcrypt. The remaining input-handling, access-control,
+supply-chain and container fixes are tracked in §5–§7 by their owners.
 
 ---
 
 ## 2. System Scope & Function
 
-- Endpoints: `/` `/register` `/login` `/logout` `/notes` `/api/notes/<id>` `/search` `/admin` `/export`.
-- Session: signed JWT in a `session` cookie; `current_user()` decodes it on each request.
-- Data store: SQLite (`/tmp/notevault.db`), tables `users` and `notes`.
-- **DFD + trust boundaries:** `<!-- TODO: threat-model owner inserts diagram -->`
+**Components / endpoints:**
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `/` | optional | home; lists the logged-in user's notes |
+| `/register` `POST` | none | create account |
+| `/login` `POST` | none | issue session JWT cookie |
+| `/logout` | — | clear cookie |
+| `/notes` `POST` | user | create note |
+| `/api/notes/<id>` | user | fetch one note (JSON) |
+| `/search?q=` | user | search own notes |
+| `/admin` | admin | list all users |
+| `/export?fmt=` | user | "export" convenience |
+
+- **Session:** signed JWT in the `session` cookie; `current_user()` decodes it per request.
+- **Data store:** SQLite at `/tmp/notevault.db`, tables `users(id,username,password,role)` and `notes(id,owner,title,body)`.
+
+**Data-Flow Diagram (trust boundary = the Flask process / container edge):**
+
+```mermaid
+flowchart LR
+    U([Browser / API client]) -- "HTTP: creds, note data, q, fmt, session cookie" --> F
+    subgraph TB[Trust boundary: NoteVault container]
+      F[Flask app.py] -- "SQL" --> D[(SQLite /tmp/notevault.db)]
+      F -- "shell: /export" --> OS[[OS shell]]
+    end
+    F -- "HTML / JSON + Set-Cookie(JWT)" --> U
+```
+`<!-- threat-model owner: replace with the official DFD image if required -->`
 
 ---
 
-## 3. Threat Model — STRIDE  *(20 pts)*
-
-`<!-- TODO: threat-model owner -->`
+## 3. Threat Model — STRIDE  *(20 pts)*  ✍️ *(owner: threat-model lead — review & extend)*
 
 | Element / data flow | S | T | R | I | D | E | Top threat & mitigation |
 |---|---|---|---|---|---|---|---|
-| | | | | | | | |
+| Client → `/login` (credentials) | ✔ | | | ✔ | | ✔ | **S/E:** forged/`alg:none` token or stolen hash → impersonation. *Mitigate:* HS256-only, bcrypt, secret from env (B1–B3). |
+| Session cookie (JWT) | ✔ | ✔ | | ✔ | | ✔ | **I/T:** cookie theft via XSS/network, no expiry. *Mitigate:* HttpOnly+Secure+SameSite, `exp` (B4–B5). |
+| Client → `/search?q` → SQLite | | ✔ | | ✔ | | ✔ | **T/I:** SQL injection dumps other users' / admin data. *Mitigate:* parameterized query (I1). |
+| `/search` response (note body) | | ✔ | | ✔ | | | **T:** stored XSS executes in victim browser. *Mitigate:* auto-escape / no `render_template_string` on user data (I2). |
+| Client → `/export?fmt` → OS shell | | ✔ | | ✔ | ✔ | ✔ | **E/D:** command injection → RCE. *Mitigate:* drop shell, whitelist fmt (I3). |
+| `/api/notes/<id>` → SQLite | | | | ✔ | | ✔ | **I/E:** IDOR reads any note. *Mitigate:* owner check (A1). |
+| Container / build | | ✔ | | ✔ | | ✔ | **E:** root container, baked secret, debug console. *Mitigate:* non-root, no ENV secret, `debug=False` (B2, C1, C2). |
+
+*Top 5 risks by likelihood × impact:* I3 (RCE) · B1 (auth bypass) · I1 (SQLi) · A1 (IDOR) · B3 (credential disclosure).
 
 ---
 
 ## 4. Vulnerability Findings  *(25 pts)*
 
-> IDs are prefixed by workstream owner (B = auth/session/crypto). Assembly owner renumbers
-> to F-01… once every team member's findings are in.
+> IDs grouped by workstream: **B**=auth/session/crypto (done), **I**=input handling,
+> **A**=access control, **C**=config/container, **S**=supply chain. Assembly owner renumbers
+> to F-01… for the final submission.
 
-### Finding B1 — JWT `alg:none` accepted (authentication bypass)
+### ✅ B1 — JWT `alg:none` accepted (authentication bypass)
 | Field | Value |
 |---|---|
-| CWE | CWE-347 Improper Verification of Cryptographic Signature |
-| OWASP 2025 | A07 Identification and Authentication Failures |
+| CWE / OWASP | CWE-347 · A07 Identification & Authentication Failures |
 | Severity | **Critical** |
-| Location | `project/starter-app/app.py:83` (`current_user()`) |
-| Reproduction | The server called `jwt.decode(tok, SECRET, algorithms=["HS256", "none"])`, so a token whose header is `{"alg":"none"}` with an **empty signature** and payload `{"sub":"admin"}` is accepted without any signature check. Submit that token as the `session` cookie → the app treats you as `admin`. |
-| Impact | Any unauthenticated attacker gains full access as any user, including admin (reads every user's notes, the admin panel, etc.). Complete authentication bypass. |
-| Evidence | `<!-- TODO: screenshot of forged-token request returning admin content -->` |
+| Location | `app.py` `current_user()` — `jwt.decode(..., algorithms=["HS256", "none"])` |
+| Reproduction | Send cookie `session=eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9.` (`{"alg":"none"}` / `{"sub":"admin"}`, empty signature). The unsigned token is accepted → authenticated as admin. |
+| Impact | Full authentication bypass as any user; no secret needed. |
 
-### Finding B2 — Hard-coded session-signing key
+### ✅ B2 — Hard-coded session-signing key
 | Field | Value |
 |---|---|
-| CWE | CWE-798 Use of Hard-coded Credentials |
-| OWASP 2025 | A07 Identification and Authentication Failures |
+| CWE / OWASP | CWE-798 · A07 |
 | Severity | **High** |
-| Location | `project/starter-app/app.py:23` + `Dockerfile` (`ENV APP_SECRET=...`) |
-| Reproduction | The HMAC key `SECRET = "notevault-dev-secret"` is in the source and baked into the image. Anyone with the repo or image reads it, then signs their own valid `HS256` token `{"sub":"admin"}`. |
-| Impact | Token forgery for any user even after B1 is fixed; the key cannot be rotated without a code/image change. |
-| Evidence | `<!-- TODO: show secret in source + a self-signed token accepted -->` |
+| Location | `app.py` `SECRET = "notevault-dev-secret"` + `Dockerfile` `ENV APP_SECRET=...` |
+| Reproduction | Key is in source/image; attacker signs their own valid `HS256` token `{"sub":"admin"}`. |
+| Impact | Token forgery even after B1; key cannot be rotated. |
 
-### Finding B3 — Passwords hashed with unsalted MD5
+### ✅ B3 — Passwords hashed with unsalted MD5
 | Field | Value |
 |---|---|
-| CWE | CWE-327 Broken Crypto Algorithm; CWE-916 Insufficient Computational Effort |
-| OWASP 2025 | A02 Cryptographic Failures |
+| CWE / OWASP | CWE-327 / CWE-916 · A02 Cryptographic Failures |
 | Severity | **High** |
-| Location | `project/starter-app/app.py:68-69` (seed), `:117` (register), `:129` (login) |
-| Reproduction | Stored passwords are `hashlib.md5(pw).hexdigest()` with no salt. Dump the `users` table (e.g. via the admin panel / SQLi) and crack the hashes instantly with a rainbow table or `hashcat -m 0`; identical passwords share a hash. |
-| Impact | Mass credential disclosure on any DB leak; fast offline cracking. |
-| Evidence | `<!-- TODO: show MD5 hash cracked to plaintext -->` |
+| Location | `app.py` seed, `/register`, `/login` — `hashlib.md5(pw).hexdigest()` |
+| Reproduction | Dump `users` and crack MD5 instantly (`hashcat -m 0`); identical passwords share a hash. |
+| Impact | Mass credential disclosure on any DB leak. |
 
-### Finding B4 — Session cookie without security flags
+### ✅ B4 — Session cookie without security flags
 | Field | Value |
 |---|---|
-| CWE | CWE-614 Sensitive Cookie Without 'Secure' Attribute (+ missing HttpOnly) |
-| OWASP 2025 | A05 Security Misconfiguration |
+| CWE / OWASP | CWE-614 · A05 Security Misconfiguration |
 | Severity | Medium |
-| Location | `project/starter-app/app.py:136` (`resp.set_cookie("session", tok)`) |
-| Reproduction | The `Set-Cookie` response carries no `HttpOnly`, `Secure`, or `SameSite`. JS (`document.cookie`) can read the token (XSS exfiltration), it may be sent over plain HTTP, and it has no CSRF defence. |
-| Impact | Session theft via XSS or network interception; CSRF exposure. |
-| Evidence | `<!-- TODO: show raw Set-Cookie header lacking flags -->` |
+| Location | `app.py` `/login` — `resp.set_cookie("session", tok)` |
+| Reproduction | `Set-Cookie` carries no `HttpOnly`/`Secure`/`SameSite`; JS can read it, it rides plain HTTP, no CSRF defence. |
+| Impact | Session theft via XSS / network; CSRF exposure. |
 
-### Finding B5 — Session tokens never expire
+### ✅ B5 — Session tokens never expire
 | Field | Value |
 |---|---|
-| CWE | CWE-613 Insufficient Session Expiration |
-| OWASP 2025 | A07 Identification and Authentication Failures |
+| CWE / OWASP | CWE-613 · A07 |
 | Severity | Medium |
-| Location | `project/starter-app/app.py:134` (`jwt.encode({"sub": username}, ...)`) |
-| Reproduction | Tokens are minted with no `exp` claim, so a captured token stays valid indefinitely — it never ages out and there is no revocation. |
+| Location | `app.py` `/login` — `jwt.encode({"sub": username}, ...)` (no `exp`) |
+| Reproduction | Token has no `exp`, so a captured token is valid forever; no revocation. |
 | Impact | A stolen/leaked token grants permanent access. |
-| Evidence | `<!-- TODO: show an old token still accepted -->` |
 
-> `<!-- TODO: teammates append F-? for SQLi (/search), XSS (/search), command injection
-> (/export), IDOR (/api/notes), admin password exposure, debug=True, vulnerable deps,
-> and the Dockerfile (root user, unpinned base). -->`
+### ✍️ I1 — SQL injection in `/search`  *(owner: input handling)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-89 · A03 Injection |
+| Severity | **High** |
+| Location | `app.py:178` (main) — `"...WHERE owner='%s' AND body LIKE '%%%s%%'" % (user, term)` |
+| Reproduction | `q` is concatenated into SQL. Craft `q` to break out of the `LIKE` clause / `UNION SELECT username,password,role FROM users` to read other users' and admin's data. *(owner: add exact payload + sqlmap output)* |
+| Impact | Read/exfiltrate arbitrary DB rows, including password hashes. |
+
+### ✍️ I2 — Stored/reflected XSS in `/search`  *(owner: input handling)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-79 · A03 Injection |
+| Severity | Medium |
+| Location | `app.py:181` (main) — results built with `render_template_string("..." + raw title/body)` |
+| Reproduction | Save a note whose body contains `<script>…</script>`, then search; the body is rendered unescaped and executes. *(owner: add payload + screenshot)* |
+| Impact | Script execution in victim's session (cookie theft, actions as user). |
+
+### ✍️ I3 — OS command injection in `/export`  *(owner: input handling)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-78 · A03 Injection |
+| Severity | **Critical** |
+| Location | `app.py:202` (main) — `subprocess.run("echo exporting notes as " + fmt, shell=True, ...)` |
+| Reproduction | `/export?fmt=txt;id` (or `$(...)`) runs arbitrary shell commands with `shell=True`. *(owner: add payload + command output)* |
+| Impact | Remote code execution on the server → full compromise. |
+
+### ✍️ A1 — IDOR in `/api/notes/<id>`  *(owner: access control)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-639 · A01 Broken Access Control |
+| Severity | **High** |
+| Location | `app.py` `api_note()` — fetches note by `id` with **no owner check** |
+| Reproduction | Log in as `alice`, request `/api/notes/2` (admin's note) → returns a note the user doesn't own (e.g. the admin "infra" note). *(owner: add request/response)* |
+| Impact | Any user reads any note by enumerating IDs. |
+
+### ✍️ A2 — Admin endpoint exposes password hashes  *(owner: access control)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-200 / CWE-522 · A01 / A02 |
+| Severity | Medium |
+| Location | `app.py:191` (main) — `SELECT id,username,password,role FROM users` returned to client |
+| Reproduction | `/admin` returns every user's `password` hash in the JSON. *(owner: add response)* |
+| Impact | Credential-hash disclosure (compounded weak hashing — see B3). |
+
+### ✍️ C1 — Flask debug mode enabled  *(owner: config/container)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-489 / CWE-215 · A05 Security Misconfiguration |
+| Severity | **High** |
+| Location | `app.py:209` (main) — `app.run(..., debug=True)` |
+| Reproduction | An unhandled exception shows the Werkzeug interactive debugger / stack traces; the console can allow code execution. *(owner: trigger an error + screenshot)* |
+| Impact | Information disclosure and potential RCE via the debugger. |
+
+### ✍️ C2 — Container runs as root on an unpinned base  *(owner: config/container)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-250 / CWE-1104 · A05 |
+| Severity | Medium |
+| Location | `Dockerfile` — `FROM python:3.12` (no digest pin), no `USER`, secret baked (see B2) |
+| Reproduction | `docker exec … whoami` → `root`; base tag is mutable. *(owner: add output)* |
+| Impact | Larger blast radius on container escape; non-reproducible builds. |
+
+### ✍️ S1 — Known-vulnerable dependencies  *(owner: supply chain)*
+| Field | Value |
+|---|---|
+| CWE / OWASP | CWE-1395 · A06 Vulnerable & Outdated Components |
+| Severity | **High** |
+| Location | `requirements.txt` — Flask 2.0.1, Werkzeug 2.0.1, Jinja2 3.0.1, PyJWT 1.7.1, requests 2.25.1, urllib3 1.26.4 |
+| Reproduction | Run Trivy / `pip-audit` on the image → CVEs in these pinned versions. *(owner: paste scan output + CVE IDs)* |
+| Impact | Exploitable known CVEs in the running stack. |
 
 ---
 
-## 5. Remediation  *(25 pts)*  — auth/session/crypto fixes
+## 5. Remediation  *(25 pts)*
 
-Branch: `remediation/auth-session-crypto`.
+### Auth / session / crypto — ✅ implemented on `remediation/auth-session-crypto`
 
-### Fix for B1 — restrict JWT algorithms  · commit `47b12b6`
+#### B1 — restrict JWT algorithms · commit `47b12b6`
 ```diff
 - data = jwt.decode(tok, SECRET, algorithms=["HS256", "none"])
 + data = jwt.decode(tok, SECRET, algorithms=["HS256"])
 ```
-- **Why this fixes it:** removing `"none"` means an unsigned token is no longer a valid algorithm, so every token must carry a real HMAC signature made with the server key.
-- **Proof the exploit now fails (verified):** forged token `eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9.` (`{"alg":"none"}` / `{"sub":"admin"}`, empty signature) sent as the `session` cookie — `GET /` renders the **login form** (unauthenticated) and `GET /admin` returns **`HTTP/1.0 403 FORBIDDEN`**. `<!-- optional: add screenshot -->`
+- **Why:** every token must now carry a real HMAC signature; `none` is no longer a valid algorithm.
+- **Proof (verified):** forged `alg:none` admin token → `GET /` shows the login form (unauthenticated), `GET /admin` → `HTTP/1.0 403 FORBIDDEN`.
 
-### Fix for B2 — key from env, not baked in  · commit `caff106`
+#### B2 — key from env, not baked in · commit `caff106`
 ```diff
-- SECRET = "notevault-dev-secret"  # used to sign session tokens
-+ SECRET = os.environ["APP_SECRET"]  # supplied at runtime
+- SECRET = "notevault-dev-secret"
++ SECRET = os.environ["APP_SECRET"]
 ```
 ```diff
-# Dockerfile
-- ENV APP_SECRET=notevault-dev-secret
-# docker-compose.yml
-+ - APP_SECRET=${APP_SECRET:?set APP_SECRET in your shell before starting}
+# Dockerfile:  - ENV APP_SECRET=notevault-dev-secret
+# compose:     + - APP_SECRET=${APP_SECRET:?set APP_SECRET in your shell before starting}
 ```
-- **Why this fixes it:** the key is no longer in source or image; it is injected at runtime and can be rotated. App fails closed at startup if it is missing.
-- **Proof (verified):** with `APP_SECRET` unset, `docker compose up` aborts: *"required variable APP_SECRET is missing a value: set APP_SECRET in your shell before starting"* — the app never starts with a default key.
+- **Why:** the key leaves the source/image, is injected at runtime, and can be rotated; app fails closed if unset.
+- **Proof (verified):** with `APP_SECRET` unset, `docker compose up` aborts — *"required variable APP_SECRET is missing a value"*.
 
-### Fix for B3 — bcrypt instead of MD5  · commit `29a125e`
+#### B3 — bcrypt instead of MD5 · commit `29a125e`
 ```diff
 - (username, hashlib.md5(password.encode()).hexdigest(), role)
 + (username, hash_pw(password), role)
 ```
 ```diff
-# /login
-- q = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (username, md5(...))
+# /login — bcrypt can't be matched in SQL, so fetch by username then verify in Python
+- q = "SELECT * FROM users WHERE username='%s' AND password='%s'" % (username, md5(...))
 - row = con.execute(q).fetchone()
 - if not row:
 + row = con.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
 + if not row or not verify_pw(password, row["password"]):
       return "login failed", 401
 ```
-- **Why this fixes it:** bcrypt adds a per-hash random salt and an adaptive work factor; `verify_pw` is constant-time. The login lookup is now parameterized (bcrypt hashes can't be matched in SQL), which also closes the injection in this one query.
-- **Note:** `bcrypt==4.2.1` added to `requirements.txt`.
-- **Proof (verified):** seeded rows now store `$2b$12$…` bcrypt hashes (not 32-hex MD5); `POST /login` alice/alicepw → `HTTP 302` (success), wrong password → `HTTP 401`.
+- **Why:** bcrypt = per-hash salt + adaptive cost; `verify_pw` is constant-time. This also parameterizes the login lookup (closes injection in *that* query; `/search` remains I1).
+- **Proof (verified):** DB rows store `$2b$12$…`; login alice/alicepw → `302`, wrong pw → `401`. Added `bcrypt==4.2.1`.
 
-### Fix for B4 — harden the session cookie  · commit `b576f57`
+#### B4 — harden the session cookie · commit `b576f57`
 ```diff
 - resp.set_cookie("session", tok)
 + resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
 ```
-- **Why this fixes it:** `HttpOnly` blocks JS access, `Secure` restricts the cookie to HTTPS, `SameSite=Lax` mitigates CSRF.
-- **Proof (verified):** login response header — `Set-Cookie: session=…; Secure; HttpOnly; Path=/; SameSite=Lax`.
+- **Why:** HttpOnly blocks JS access, Secure forces HTTPS, SameSite=Lax mitigates CSRF.
+- **Proof (verified):** `Set-Cookie: session=…; Secure; HttpOnly; Path=/; SameSite=Lax`.
 
-### Fix for B5 — expire session tokens  · commit `59132fa`
+#### B5 — expire session tokens · commit `59132fa`
 ```diff
 - tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
 + now = datetime.now(timezone.utc)
 + tok = jwt.encode({"sub": username, "iat": now, "exp": now + timedelta(hours=1)},
 +                  SECRET, algorithm="HS256")
 ```
-- **Why this fixes it:** tokens carry a 1-hour `exp`; `jwt.decode()` rejects expired tokens automatically, so a leaked token ages out.
-- **Proof (verified):** issued token payload decodes to `{"sub":"alice","iat":1792487370,"exp":1792490970}` — `exp − iat = 3600 s` (1 hour).
+- **Why:** 1-hour `exp`; `jwt.decode()` rejects expired tokens automatically.
+- **Proof (verified):** token payload `{"sub":"alice","iat":1792487370,"exp":1792490970}` → `exp−iat = 3600 s`.
+
+### Remaining workstreams — ✍️ *(each owner adds before/after diff, commit, and proof)*
+
+| Finding | Suggested fix direction | Owner |
+|---|---|---|
+| I1 SQLi `/search` | parameterized query (`?` placeholders), never `%`-format SQL | input handling |
+| I2 XSS `/search` | render via a Jinja template with autoescape; don't concatenate user data into `render_template_string` | input handling |
+| I3 cmd injection `/export` | drop `shell=True`; whitelist `fmt`; build output without a shell | input handling |
+| A1 IDOR `/api/notes` | enforce `WHERE id=? AND owner=?` (or 403 if not owner/admin) | access control |
+| A2 admin leak | stop selecting/returning the `password` column | access control |
+| C1 debug mode | `debug=False` (or env-gated); never in the shipped image | config/container |
+| C2 Dockerfile | pin base by digest, add non-root `USER`, minimal layers | config/container |
+| S1 deps | bump to patched versions; keep SBOM + SCA gate (see §6/§7) | supply chain |
 
 ---
 
-## 6. Supply-Chain Hardening  *(15 pts)*
-`<!-- TODO: SBOM + Cosign owner -->`
+## 6. Supply-Chain Hardening  *(15 pts)*  `<!-- TODO: owner -->`
+- SBOM (CycloneDX) — attach `sbom.json`, note component count.
+- Artifact signed & verified with Cosign — paste `cosign verify` output.
+- One-paragraph SLSA self-assessment.
 
-## 7. Security CI Pipeline  *(10 pts)*
-`<!-- TODO: CI owner -->`
+## 7. Security CI Pipeline  *(10 pts)*  `<!-- TODO: owner -->`
+- GitHub Actions workflow (SAST + SCA + secret scanning), link + screenshot of a build **failing** on a HIGH/CRITICAL finding, and how the gate is configured.
 
-## 8. Conclusion & Reflection  *(5 pts)*
-`<!-- TODO -->`
+## 8. Conclusion & Reflection  *(5 pts)*  `<!-- TODO -->`
+- Residual risks (e.g. no CSRF tokens yet; rate limiting) and what you'd harden next; lessons learned.
 
 ## Appendix
-- **Task split:** คน B — Auth/Session/Crypto (findings B1–B5) + report assembly (§1, §4).
+- **Task split:** คน B — auth/session/crypto (B1–B5, implemented & verified) + report assembly (§1, §2–§4 scaffold). Other findings owned per the table above.
 - References: CWE (cwe.mitre.org), OWASP Top 10:2025.
+
+---
+
+## Grading rubric (100)
+
+| Criterion | Pts |
+|---|---|
+| Threat model (§3) | 20 |
+| Vulnerability findings (§4) | 25 |
+| Remediation (§5) | 25 |
+| Supply-chain (§6) | 15 |
+| CI pipeline (§7) | 10 |
+| Presentation & clarity (§1, §8) | 5 |
