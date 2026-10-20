@@ -15,6 +15,7 @@ import os
 import sqlite3
 import subprocess
 
+import bcrypt
 import jwt  # PyJWT
 from flask import Flask, request, jsonify, render_template_string, redirect, make_response
 
@@ -31,6 +32,19 @@ TEAM_SALT = os.environ.get("TEAM_SALT", "notevault-anti-copy-dev-salt")
 
 def team_marker():
     return hmac.new(TEAM_SALT.encode(), TEAM_ID.encode(), hashlib.sha256).hexdigest()[:12]
+
+
+def hash_pw(password):
+    """Salted, adaptive password hash (bcrypt). Replaces unsalted MD5."""
+    return bcrypt.hashpw((password or "").encode(), bcrypt.gensalt()).decode()
+
+
+def verify_pw(password, stored):
+    """Constant-time verify against a stored bcrypt hash."""
+    try:
+        return bcrypt.checkpw((password or "").encode(), (stored or "").encode())
+    except (ValueError, TypeError):
+        return False
 
 
 PAGE = """
@@ -65,8 +79,8 @@ def seed():
         "CREATE TABLE notes (id INTEGER PRIMARY KEY, owner TEXT, title TEXT, body TEXT);"
     )
     con.executemany("INSERT INTO users (username, password, role) VALUES (?,?,?)",
-                    [("alice", hashlib.md5(b"alicepw").hexdigest(), "user"),
-                     ("admin", hashlib.md5(b"admin123").hexdigest(), "admin")])
+                    [("alice", hash_pw("alicepw"), "user"),
+                     ("admin", hash_pw("admin123"), "admin")])
     con.executemany("INSERT INTO notes (owner, title, body) VALUES (?,?,?)",
                     [("alice", "groceries", "milk, eggs"),
                      ("admin", "infra", "prod db password is hunter2"),
@@ -114,7 +128,7 @@ def register():
     role = request.form.get("role") or (request.json or {}).get("role") or "user"
     con = db()
     con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
-                (username, hashlib.md5(password.encode()).hexdigest(), role))
+                (username, hash_pw(password), role))
     con.commit()
     con.close()
     return redirect("/")
@@ -125,11 +139,9 @@ def login():
     username = request.form.get("username") or (request.json or {}).get("username")
     password = request.form.get("password") or (request.json or {}).get("password")
     con = db()
-    q = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (
-        username, hashlib.md5((password or "").encode()).hexdigest())
-    row = con.execute(q).fetchone()
+    row = con.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
     con.close()
-    if not row:
+    if not row or not verify_pw(password, row["password"]):
         return "login failed", 401
     tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
     resp = make_response(redirect("/"))
