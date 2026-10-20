@@ -41,16 +41,24 @@ handling, access control, sessions & cryptography, dependencies, and container/b
 
 | Severity | Count | Examples |
 |---|---|---|
-| Critical | 2 | JWT `alg:none` → admin impersonation (B1); OS command injection in `/export` (I3) |
-| High | 6 | Hard-coded signing key (B2); unsalted MD5 passwords (B3); SQL injection in `/search` (I1); IDOR in `/api/notes` (A1); Flask `debug=True` (C1); vulnerable dependencies (S1) |
+| Critical | 2 | Hard-coded signing key → forge valid admin token (B2); OS command injection in `/export` (I3) |
+| High | 5 | Unsalted MD5 passwords (B3); SQL injection in `/search` (I1); IDOR in `/api/notes` (A1); Flask `debug=True` (C1); vulnerable dependencies (S1) |
 | Medium | 5 | Cookie without security flags (B4); tokens never expire (B5); stored XSS in `/search` (I2); admin endpoint leaks password hashes (A2); container runs as root / unpinned base (C2) |
+| Low | 1 | `alg:none` left in the JWT allowlist (B1) — footgun, not exploitable under PyJWT 1.7.1 |
 
-**Overall risk — before:** an unauthenticated attacker could forge an admin token (B1) or
-run shell commands on the server (I3) for full compromise; stored credentials were trivially
-crackable (B3). **After (auth/session/crypto workstream complete):** session tokens are
-signed with a runtime-injected key, restricted to `HS256`, time-limited and carried in a
-hardened cookie; passwords use bcrypt. The remaining input-handling, access-control,
-supply-chain and container fixes are tracked in §5–§7 by their owners.
+**Overall risk — before:** an attacker who read the repo/image could forge a valid admin
+session token (B2) — **verified**: a token signed with the leaked key returned `/admin`
+`HTTP 200` — or run shell commands on the server (I3) for full compromise; stored
+credentials were trivially crackable (B3). **After (auth/session/crypto workstream
+complete):** session tokens are signed with a runtime-injected key, restricted to `HS256`,
+time-limited and carried in a hardened cookie; passwords use bcrypt. The remaining
+input-handling, access-control, supply-chain and container fixes are tracked in §5–§7 by
+their owners.
+
+> **Reproduction note (integrity):** every B-finding was *run* against both the vulnerable
+> baseline and the fix. The commonly-assumed `alg:none` bypass (B1) **does not work here** —
+> PyJWT 1.7.1 refuses a `none` token when a key is supplied (`InvalidKeyError`), so B1 is a
+> latent footgun (Low); the real token-forgery path is the hard-coded key (B2).
 
 ---
 
@@ -100,7 +108,7 @@ flowchart LR
 | `/api/notes/<id>` → SQLite | | | | ✔ | | ✔ | **I/E:** IDOR reads any note. *Mitigate:* owner check (A1). |
 | Container / build | | ✔ | | ✔ | | ✔ | **E:** root container, baked secret, debug console. *Mitigate:* non-root, no ENV secret, `debug=False` (B2, C1, C2). |
 
-*Top 5 risks by likelihood × impact:* I3 (RCE) · B1 (auth bypass) · I1 (SQLi) · A1 (IDOR) · B3 (credential disclosure).
+*Top 5 risks by likelihood × impact:* I3 (RCE) · B2 (token forgery via leaked key) · I1 (SQLi) · A1 (IDOR) · B3 (credential disclosure).
 
 ---
 
@@ -110,23 +118,23 @@ flowchart LR
 > **A**=access control, **C**=config/container, **S**=supply chain. Assembly owner renumbers
 > to F-01… for the final submission.
 
-### ✅ B1 — JWT `alg:none` accepted (authentication bypass)
+### ✅ B1 — `alg:none` left in the JWT algorithm allowlist (latent footgun)
 | Field | Value |
 |---|---|
 | CWE / OWASP | CWE-347 · A07 Identification & Authentication Failures |
-| Severity | **Critical** |
+| Severity | **Low** (not exploitable as shipped — see note) |
 | Location | `app.py` `current_user()` — `jwt.decode(..., algorithms=["HS256", "none"])` |
-| Reproduction | Send cookie `session=eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9.` (`{"alg":"none"}` / `{"sub":"admin"}`, empty signature). The unsigned token is accepted → authenticated as admin. |
-| Impact | Full authentication bypass as any user; no secret needed. |
+| Reproduction attempted | Sent `session=eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9.` (`{"alg":"none"}`/`{"sub":"admin"}`). **Result: rejected** — on both baseline and fix `/admin` → `HTTP 403`. PyJWT 1.7.1 raises `InvalidKeyError: When alg = "none", key value must be None` because a (non-empty) key is passed, so the classic bypass fails here. |
+| Impact | None as shipped, but accepting `none` is a known auth-bypass pattern: it would become exploitable if the key were ever empty or the JWT library changed. Removed as defence-in-depth. |
 
-### ✅ B2 — Hard-coded session-signing key
+### ✅ B2 — Hard-coded session-signing key (verified token forgery)
 | Field | Value |
 |---|---|
 | CWE / OWASP | CWE-798 · A07 |
-| Severity | **High** |
+| Severity | **Critical** |
 | Location | `app.py` `SECRET = "notevault-dev-secret"` + `Dockerfile` `ENV APP_SECRET=...` |
-| Reproduction | Key is in source/image; attacker signs their own valid `HS256` token `{"sub":"admin"}`. |
-| Impact | Token forgery even after B1; key cannot be rotated. |
+| Reproduction | The key is in the source and baked into the image. Sign a valid `HS256` token `{"sub":"admin"}` with `notevault-dev-secret` and send it as the `session` cookie. **Verified:** baseline `/admin` → `HTTP 200` (authenticated as admin); against the fix (random runtime key) the same token → `HTTP 403`. |
+| Impact | Full authentication bypass / admin impersonation for anyone with the repo or image; the key cannot be rotated. **This is the real critical auth-bypass, not B1.** |
 
 ### ✅ B3 — Passwords hashed with unsalted MD5
 | Field | Value |
@@ -238,8 +246,8 @@ flowchart LR
 - data = jwt.decode(tok, SECRET, algorithms=["HS256", "none"])
 + data = jwt.decode(tok, SECRET, algorithms=["HS256"])
 ```
-- **Why:** every token must now carry a real HMAC signature; `none` is no longer a valid algorithm.
-- **Proof (verified):** forged `alg:none` admin token → `GET /` shows the login form (unauthenticated), `GET /admin` → `HTTP/1.0 403 FORBIDDEN`.
+- **Why:** removes the `none` footgun so the code can never be coerced into skipping signature checks (defence-in-depth; see B1's note on why it was not exploitable as shipped).
+- **Proof (verified):** forged `alg:none` admin token → `/admin` `HTTP 403` on both baseline and fix (PyJWT 1.7.1 already rejected it); after the fix `none` is not even an accepted algorithm.
 
 #### B2 — key from env, not baked in · commit `caff106`
 ```diff
@@ -251,7 +259,7 @@ flowchart LR
 # compose:     + - APP_SECRET=${APP_SECRET:?set APP_SECRET in your shell before starting}
 ```
 - **Why:** the key leaves the source/image, is injected at runtime, and can be rotated; app fails closed if unset.
-- **Proof (verified):** with `APP_SECRET` unset, `docker compose up` aborts — *"required variable APP_SECRET is missing a value"*.
+- **Proof (verified):** a token `{"sub":"admin"}` signed with the leaked `notevault-dev-secret` → baseline `/admin` `HTTP 200`, fixed `/admin` `HTTP 403` (fix uses a random runtime key). Also, with `APP_SECRET` unset, `docker compose up` aborts — *"required variable APP_SECRET is missing a value"*.
 
 #### B3 — bcrypt instead of MD5 · commit `29a125e`
 ```diff
