@@ -41,7 +41,11 @@ PAGE = """
   {% if is_admin %}· <a href="/admin">admin</a>{% endif %}</p>
 <form method=post action="/notes"><input name=title placeholder=title>
   <input name=body placeholder=note><button>Add note</button></form>
-<h3>Your notes</h3>{{ notes_html|safe }}
+<h3>Your notes</h3><ul>
+{% for note in notes %}
+<li>#{{ note.id }} <b>{{ note.title }}</b>: {{ note.body }}</li>
+{% endfor %}
+</ul>
 <form action="/search"><input name=q placeholder="search notes"><button>Search</button></form>
 {% else %}
 <form method=post action="/login">user <input name=username> pass <input name=password type=password>
@@ -49,6 +53,16 @@ PAGE = """
 <form method=post action="/register">new: <input name=username> <input name=password type=password>
   <button>Register</button></form>
 {% endif %}
+"""
+
+
+SEARCH_PAGE = """
+<!doctype html><title>NoteVault search</title>
+<a href="/">back</a><ul>
+{% for note in notes %}
+<li>{{ note.title }}: {{ note.body }}</li>
+{% endfor %}
+</ul>
 """
 
 
@@ -98,15 +112,13 @@ def role_of(username):
 @app.route("/")
 def home():
     user = current_user()
-    notes_html = ""
+    notes = []
     if user:
         con = db()
-        rows = con.execute("SELECT id,title,body FROM notes WHERE owner = ?", (user,)).fetchall()
+        notes = con.execute("SELECT id,title,body FROM notes WHERE owner = ?", (user,)).fetchall()
         con.close()
-        notes_html = "".join(
-            "<li>#%d <b>%s</b>: %s</li>" % (r["id"], r["title"], r["body"]) for r in rows)
     return render_template_string(PAGE, user=user, is_admin=(user and role_of(user) == "admin"),
-                                  notes_html=notes_html)
+                                  notes=notes)
 
 
 @app.route("/register", methods=["POST"])
@@ -192,8 +204,7 @@ def search():
     q = "SELECT id,title,body FROM notes WHERE owner='%s' AND body LIKE '%%%s%%'" % (user, term)
     rows = con.execute(q).fetchall()
     con.close()
-    return render_template_string("<a href=/>back</a><ul>" +
-        "".join("<li>%s: %s</li>" % (r["title"], r["body"]) for r in rows) + "</ul>")
+    return render_template_string(SEARCH_PAGE, notes=rows)
 
 
 @app.route("/admin")
@@ -215,7 +226,7 @@ def export():
     # convenience "export" feature
     out = subprocess.run("echo exporting notes as " + fmt, shell=True,
                          capture_output=True, text=True)
-    return "<pre>%s</pre>" % out.stdout
+    return render_template_string("<pre>{{ output }}</pre>", output=out.stdout)
 
 
 if __name__ == "__main__":
