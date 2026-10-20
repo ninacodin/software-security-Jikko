@@ -20,7 +20,7 @@ from flask import Flask, request, jsonify, render_template_string, redirect, mak
 
 app = Flask(__name__)
 DB = "/tmp/notevault.db"
-SECRET = "notevault-dev-secret"  # used to sign session tokens
+SECRET = os.environ["APP_SECRET"]  # session-token signing key; must be supplied at runtime
 
 # Anti-copying: every team's build is seeded with a marker derived from their own TEAM_ID, so
 # any evidence a team submits (SQLi dump, IDOR response, admin-panel screenshot) that shows the
