@@ -1,66 +1,58 @@
-# Person A — Before/After Exploit Verification (reproduced by running)
+# Person A — Before/After Exploit Evidence (Injection & Input)
 
-Target: NoteVault `project/starter-app`, TEAM_ID=Jikko. Owner: Supawan 6631503042.
-BEFORE = commit `039029f` (import, vulnerable) · AFTER = commit `d66e777` (fix, branch fix/injection-input-6631503042).
-Reproduced live with Docker (server 29.2.0) + curl.exe on 2026-10-20.
-
-> NOTE: these are the raw tool outputs. For the report's "Evidence" cells you still need the
-> **screenshots with your identity stamp in frame**:
->   printf '%s | %s | ' "$(whoami)" '6631503042'; date '+%F %T %Z'
+Target: NoteVault `project/starter-app`, `TEAM_ID=Jikko`. Owner: **Supawan, 6631503042**.
+BEFORE = commit `039029f` (vulnerable) · AFTER = commit `d66e777` (fix, branch `fix/injection-input-6631503042`).
+Reproduced live on Windows 11 + Docker Desktop. Each screenshot carries the identity stamp
+`whoami | 6631503042 | timestamp` in-frame.
 
 ---
 
-## F-A1 — SQLi /login (auth bypass)
+## F-A1 — SQL Injection at `/login` (authentication bypass, CWE-89)
 Request: `POST /login  username=admin'-- -  password=wrong`
 
-BEFORE:
-```
-HTTP/1.0 302 FOUND
-Set-Cookie: session=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbictLSAtIn0...; Path=/
-```
-AFTER:
-```
-HTTP/1.0 401 UNAUTHORIZED
-login failed
-```
-Verdict: auth bypass CLOSED (302+session → 401).
+| Before (vulnerable) | After (fixed) |
+|---|---|
+| `HTTP/1.0 302 FOUND` + `Set-Cookie: session=…` → logged in as admin | `HTTP/1.0 401 UNAUTHORIZED` → login failed |
+
+**Before:**
+![before /login — 302 + Set-Cookie](screenshots/1-before-login.png)
+
+**After:**
+![after /login — 401 Unauthorized](screenshots/4-after-login.png)
+
+Verdict: auth bypass **CLOSED** (302 + session → 401).
 
 ---
 
-## F-A2 — SQLi /search (UNION credential dump)
+## F-A2 — SQL Injection at `/search` (credential disclosure via UNION, CWE-89)
 Request: authenticated `GET /search?q=%' UNION SELECT id,username,password FROM users-- -`
 
-BEFORE:
-```
-<a href=/>back</a><ul><li>alice: 15da1f78ad7d474862865bab1aab4d51</li><li>groceries: milk, eggs</li><li>admin: 0192023a7bbd73250516f069df18b500</li></ul>
-```
-(leaked MD5 password hashes for alice + admin)
+| Before (vulnerable) | After (fixed) |
+|---|---|
+| leaks `alice: 15da1f78…` and `admin: 0192023a7bbd…` (MD5 hashes) | `<a href=/>back</a><ul></ul>` — empty |
 
-AFTER:
-```
-<a href=/>back</a><ul></ul>
-```
-Verdict: credential disclosure CLOSED (hashes → empty result).
+**Before:**
+![before /search — hashes dumped](screenshots/2-before-search.png)
+
+**After:**
+![after /search — empty result](screenshots/5-after-search.png)
+
+Verdict: credential disclosure **CLOSED** (hashes → empty result; payload matched literally).
 
 ---
 
-## F-A3 — Command injection /export (RCE as root)
+## F-A3 — OS Command Injection at `/export` (RCE as root, CWE-78)
 Request: authenticated `GET /export?fmt=txt;id`
 
-BEFORE:
-```
-<pre>exporting notes as txt
-uid=0(root) gid=0(root) groups=0(root)
-</pre>
-```
-AFTER:
-```
-HTTP/1.0 400 BAD REQUEST
-invalid format
-```
-Functional sanity (AFTER) — valid format still works, `GET /export?fmt=csv`:
-```
-<pre>exporting notes as csv
-</pre>
-```
-Verdict: command injection CLOSED (uid=0 root → 400); legitimate export preserved.
+| Before (vulnerable) | After (fixed) |
+|---|---|
+| `exporting notes as txt` + `uid=0(root) gid=0(root) groups=0(root)` | `HTTP/1.0 400 BAD REQUEST` — invalid format |
+
+**Before:**
+![before /export — uid=0(root)](screenshots/3-before-export.png)
+
+**After:**
+![after /export — 400 invalid format](screenshots/6-after-export.png)
+
+Verdict: command injection **CLOSED** (uid=0 root → 400). Legitimate `fmt=csv` still returns
+`exporting notes as csv` — functionality preserved.

@@ -89,7 +89,7 @@ aggravated by #2-adjacent root container (Person D) — a cross-zone chain worth
 | Root cause | Username & password hash concatenated with `%`-formatting into the SQL string; a `'` in `username` breaks out of the literal. |
 | Reproduction | `POST /login` `username=admin'-- -` + any wrong `password` → `-- -` comments out the password check → returns the admin row. |
 | Impact | Full auth bypass — log in as any user incl. `admin` without a password (HTTP 302 + session cookie). |
-| Evidence | before: `302` + `Set-Cookie: session=…`; after: `401 login failed`. |
+| Evidence | before: `302` + `Set-Cookie: session=…`; after: `401 login failed`. Screenshots: `screenshots/1-before-login.png`, `screenshots/4-after-login.png`. |
 
 ### Finding F-A2 — SQL Injection at `/search` (credential disclosure via UNION)
 | Field | Value |
@@ -101,7 +101,7 @@ aggravated by #2-adjacent root container (Person D) — a cross-zone chain worth
 | Root cause | Search term concatenated into SQL; the 3-column result set is reflected to the page → UNION extraction. |
 | Reproduction | authenticated `GET /search?q=%' UNION SELECT id,username,password FROM users-- -` → appends every user's name + MD5 hash. |
 | Impact | Disclosure of all usernames + password hashes; arbitrary table read → account takeover after offline cracking. |
-| Evidence | before: lists `alice`/`admin` + hashes; after: empty `<ul></ul>`. |
+| Evidence | before: lists `alice`/`admin` + hashes; after: empty `<ul></ul>`. Screenshots: `screenshots/2-before-search.png`, `screenshots/5-after-search.png`. |
 
 ### Finding F-A3 — OS Command Injection at `/export` (RCE as root)
 | Field | Value |
@@ -113,7 +113,7 @@ aggravated by #2-adjacent root container (Person D) — a cross-zone chain worth
 | Root cause | `subprocess.run("echo exporting notes as " + fmt, shell=True)` — `fmt` is concatenated into a `/bin/sh` command; metacharacters (`;`, `|`, `` ` ``, `$()`) are interpreted. |
 | Reproduction | authenticated `GET /export?fmt=txt;id` → shell runs `echo … ; id` → `uid=0(root)`. Aggravated by root container (Person D). |
 | Impact | Arbitrary command execution as root inside the container — full host-process compromise. |
-| Evidence | before: output contains `uid=0(root)`; after: `400 invalid format`. |
+| Evidence | before: output contains `uid=0(root)`; after: `400 invalid format`. Screenshots: `screenshots/3-before-export.png`, `screenshots/6-after-export.png`. |
 
 ---
 
@@ -131,7 +131,7 @@ All three fixed on branch `fix/injection-input-6631503042`, commit **`d66e777`**
 +    row = con.execute(q, (username, pw_hash)).fetchone()
 ```
 - **Why:** values are bound as data, never parsed as SQL. `admin'-- -` becomes a literal username that matches no row → `401`. (MD5 left intentionally — Person B's crypto finding.)
-- **Proof exploit fails:** `username=admin'-- -` → `401 login failed` *(verified by running, 2026-10-20)*.
+- **Proof exploit fails:** `username=admin'-- -` → `401 login failed` *(verified by running, 2026-10-22)* — see `screenshots/4-after-login.png`.
 
 ### Fix for F-A2 — parameterized search + LIKE escaping
 ```diff
@@ -142,7 +142,7 @@ All three fixed on branch `fix/injection-input-6631503042`, commit **`d66e777`**
 +    rows = con.execute(q, (user, "%" + like + "%")).fetchall()
 ```
 - **Why:** the term is bound, so `UNION SELECT …` can't break out; `ESCAPE '\'` + pre-escaping `% _ \` makes wildcards match literally.
-- **Proof exploit fails:** UNION payload → empty result; `%'` searched as literal text *(verified by running)*.
+- **Proof exploit fails:** UNION payload → empty result; `%'` searched as literal text *(verified by running)* — see `screenshots/5-after-search.png`.
 
 ### Fix for F-A3 — allowlist + shell=False
 ```diff
@@ -154,4 +154,4 @@ All three fixed on branch `fix/injection-input-6631503042`, commit **`d66e777`**
                           capture_output=True, text=True)
 ```
 - **Why:** defence-in-depth — (1) allowlist rejects anything but `txt/csv/json` → `400`; (2) `shell=False` + argv list means no value is ever parsed by a shell. Either layer alone stops the attack.
-- **Proof exploit fails:** `?fmt=txt;id` → `400 invalid format`; `?fmt=csv` still returns `exporting notes as csv` (legit use preserved) *(verified by running)*.
+- **Proof exploit fails:** `?fmt=txt;id` → `400 invalid format`; `?fmt=csv` still returns `exporting notes as csv` (legit use preserved) *(verified by running)* — see `screenshots/6-after-export.png`.
