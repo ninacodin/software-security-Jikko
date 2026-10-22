@@ -1,0 +1,86 @@
+name: project-security (team Jikko)
+
+# Term-project security gate for project/starter-app (NoteVault).
+#
+# This is SEPARATE from the course's security-ci.yml on purpose. That workflow
+# deliberately does NOT scan project/starter-app (it's intentionally vulnerable
+# teaching material, excluded via .semgrepignore / .trivyignore / skip-dirs).
+# Our assignment is the opposite: scan NoteVault and FAIL the build on any
+# HIGH/CRITICAL finding. So we add our own workflow instead of widening the
+# course exclusions.
+#
+# IMPORTANT: Semgrep and Trivy read .semgrepignore / .trivyignore from the repo
+# root, and the root .semgrepignore lists project/starter-app/. Each job below
+# therefore scans from INSIDE project/starter-app so those root ignore files do
+# not silently zero out the results (a false pass).
+#
+# Actions are pinned to commit SHAs (mutable tags like @v4 are a supply-chain
+# risk — the Week 12 lesson); bump the SHA and the trailing version comment
+# together.
+
+on:
+  push:
+    paths:
+      - 'project/starter-app/**'
+      - '.github/workflows/project-security.yml'
+  pull_request:
+    paths:
+      - 'project/starter-app/**'
+      - '.github/workflows/project-security.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sast:
+    name: SAST (Semgrep) — NoteVault
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      # Copy the app OUT of the repo before scanning. Semgrep walks up to the git
+      # root to find .semgrepignore, and the root one lists project/starter-app/ —
+      # so scanning in place (even with working-directory) yields "Targets
+      # scanned: 0", a false pass. A copy under /scan has no .semgrepignore and is
+      # not a git tree, so every file is scanned. --error fails the build on any
+      # ERROR-severity finding.
+      - name: Semgrep scan
+        run: |
+          cp -r project/starter-app /scan
+          cd /scan
+          semgrep scan --config p/default --config p/owasp-top-ten --severity ERROR --error .
+
+  sca:
+    name: SCA + misconfig + secrets (Trivy) — NoteVault
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Trivy filesystem scan (deps + Dockerfile misconfig + secrets)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: project/starter-app
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: '1'                 # fail the build on HIGH/CRITICAL
+          limit-severities-for-sarif: true
+          format: table
+
+  secrets:
+    name: Secret scanning (Gitleaks) — NoteVault
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+      # Scan only the project path. NOTE: Gitleaks' default rules do not flag
+      # NoteVault's low-entropy baked secret ("notevault-dev-secret") — Trivy's
+      # misconfig scanner (DS-0031) is what catches that. We keep Gitleaks in the
+      # pipeline for real credential formats committed anywhere in the app.
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
+        env:
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+          GITLEAKS_ENABLE_SUMMARY: 'true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
