@@ -72,15 +72,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          fetch-depth: 0
-      # Scan only the project path. NOTE: Gitleaks' default rules do not flag
-      # NoteVault's low-entropy baked secret ("notevault-dev-secret") — Trivy's
-      # misconfig scanner (DS-0031) is what catches that. We keep Gitleaks in the
-      # pipeline for real credential formats committed anywhere in the app.
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
-        env:
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
-          GITLEAKS_ENABLE_SUMMARY: 'true'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Scan ONLY the app directory as a filesystem (--no-git), not the whole git
+      # history. gitleaks-action scans the full commit range, which flags advisory
+      # text in our own evidence files (e.g. a CVE description quoting a sample PEM
+      # key) — a false positive that has nothing to do with NoteVault. `dir`
+      # keeps the gate scoped to the target app.
+      #
+      # NOTE: Gitleaks' default rules do not flag NoteVault's low-entropy baked
+      # secret ("notevault-dev-secret") — Trivy's misconfig scanner (DS-0031) is
+      # what catches that. Gitleaks stays in the pipeline for real credential
+      # formats committed into the app.
+      - name: Run Gitleaks on the app
+        run: |
+          docker run --rm -v "${{ github.workspace }}/project/starter-app:/scan:ro" \
+            ghcr.io/gitleaks/gitleaks:v8.24.3 dir /scan --no-banner --verbose --exit-code 1
