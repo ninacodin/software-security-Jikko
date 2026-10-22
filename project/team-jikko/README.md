@@ -44,4 +44,13 @@ Three gates, fail on HIGH/CRITICAL:
 - **SCA + misconfig + secrets** — Trivy fs scan of `project/starter-app`.
 - **Secrets** — Gitleaks.
 
-See `RUNBOOK.md` for the exact commands to reproduce every artifact here.
+## Deliverable docs
+- `report-personD.md` — ready-to-paste report content (§4/§5/§6/§7 + SLSA).
+- `demo-script.md` — Week-19 demo walkthrough (attack → root cause → fix) + viva Q&A.
+- `RUNBOOK.md` — exact commands to reproduce every artifact here.
+
+## Live CI runs (for the §7 screenshot)
+- Baseline, Trivy **fails** on HIGH/CRITICAL:
+  https://github.com/ninacodin/software-security-Jikko/actions/runs/39839508883
+- After Person-D fixes, Trivy **passes**:
+  https://github.com/ninacodin/software-security-Jikko/actions/runs/39839516007
