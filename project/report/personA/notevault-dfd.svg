@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="620" viewBox="0 0 980 620" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="980" height="620" fill="#ffffff"/>
+  <text x="490" y="30" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">NoteVault — Data-Flow Diagram (Term Project, Team Jikko)</text>
+
+  <!-- Zones -->
+  <rect x="20" y="55" width="250" height="400" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="145" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">Internet (untrusted)</text>
+
+  <rect x="340" y="55" width="620" height="520" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="650" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#475569">Server host / container (trusted)</text>
+
+  <!-- Trust boundary TB1 (network) -->
+  <line x1="305" y1="50" x2="305" y2="585" stroke="#dc2626" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="305" y="602" text-anchor="middle" font-size="12" font-weight="700" fill="#dc2626">TB1 — Internet / Server (network perimeter)</text>
+
+  <!-- External entities -->
+  <g font-size="13" fill="#0f172a">
+    <rect x="45" y="100" width="200" height="54" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="145" y="131" text-anchor="middle" font-weight="600">Anonymous visitor</text>
+
+    <rect x="45" y="215" width="200" height="54" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="145" y="246" text-anchor="middle" font-weight="600">Authenticated user</text>
+
+    <rect x="45" y="330" width="200" height="54" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+    <text x="145" y="361" text-anchor="middle" font-weight="600">Admin</text>
+  </g>
+
+  <!-- Process P1 -->
+  <rect x="420" y="215" width="190" height="120" rx="60" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="515" y="268" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">P1</text>
+  <text x="515" y="289" text-anchor="middle" font-size="13" fill="#14532d">NoteVault</text>
+  <text x="515" y="307" text-anchor="middle" font-size="13" fill="#14532d">Flask app + API</text>
+
+  <!-- Process P2 (export subprocess) -->
+  <rect x="740" y="95" width="190" height="86" rx="43" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+  <text x="835" y="130" text-anchor="middle" font-size="13" font-weight="700" fill="#713f12">P2: export subprocess</text>
+  <text x="835" y="150" text-anchor="middle" font-size="12" fill="#713f12">OS command (echo …)</text>
+
+  <!-- Data store D1 (SQLite) -->
+  <g>
+    <path d="M740,420 a95,14 0 0 0 190,0 v70 a95,14 0 0 1 -190,0 z" fill="#f1f5f9" stroke="#64748b" stroke-width="1.8"/>
+    <ellipse cx="835" cy="420" rx="95" ry="14" fill="#e2e8f0" stroke="#64748b" stroke-width="1.8"/>
+    <text x="835" y="460" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">D1: SQLite DB</text>
+    <text x="835" y="478" text-anchor="middle" font-size="12" fill="#334155">users (creds, role), notes</text>
+  </g>
+
+  <!-- Trust boundary TB2 (App <-> DB) -->
+  <line x1="668" y1="360" x2="668" y2="500" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="668" y="520" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626">TB2 — SQL boundary</text>
+  <text x="668" y="534" text-anchor="middle" font-size="10" fill="#dc2626">(SQLi: /login, /search)</text>
+
+  <!-- Trust boundary TB3 (App <-> shell) -->
+  <line x1="668" y1="120" x2="668" y2="235" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="668" y="105" text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626">TB3 — shell/exec boundary</text>
+  <text x="640" y="200" text-anchor="middle" font-size="10" fill="#dc2626">(Cmd inj: /export)</text>
+
+  <!-- Flows -->
+  <g font-size="11" fill="#334155" stroke="#334155" stroke-width="1.5">
+    <!-- F1 anon -> P1 -->
+    <line x1="245" y1="127" x2="432" y2="235" marker-end="url(#arrow)"/>
+    <!-- F2 P1 -> auth (session) -->
+    <line x1="420" y1="255" x2="247" y2="235" marker-end="url(#arrow)"/>
+    <!-- F3/F4/F5 auth -> P1 -->
+    <line x1="245" y1="255" x2="418" y2="275" marker-end="url(#arrow)"/>
+    <!-- F6 admin -> P1 -->
+    <line x1="245" y1="352" x2="432" y2="320" marker-end="url(#arrow)"/>
+    <!-- P1 -> D1 -->
+    <line x1="580" y1="320" x2="770" y2="415" marker-end="url(#arrow)"/>
+    <!-- P1 -> P2 -->
+    <line x1="580" y1="230" x2="760" y2="165" marker-end="url(#arrow)"/>
+    <!-- P1 -> admin (F6 response) -->
+    <line x1="418" y1="305" x2="247" y2="368" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Flow labels -->
+  <g font-size="11" fill="#1e293b" font-weight="600">
+    <text x="330" y="168" text-anchor="middle">F1 login/register</text>
+    <text x="325" y="228" text-anchor="middle" fill="#2563eb">F2 session JWT</text>
+    <text x="325" y="272" text-anchor="middle">F3/F4/F5 notes·search·export</text>
+    <text x="330" y="348" text-anchor="middle">F6 admin request</text>
+    <text x="690" y="378" text-anchor="middle">SQL / rows</text>
+    <text x="700" y="205" text-anchor="middle">argv / stdout</text>
+    <text x="300" y="400" text-anchor="middle" fill="#b91c1c">F6 users + hashes</text>
+  </g>
+
+  <!-- Legend -->
+  <g font-size="11" fill="#475569">
+    <rect x="45" y="474" width="200" height="96" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="55" y="492" font-weight="700" fill="#0f172a">Legend</text>
+    <rect x="55" y="500" width="16" height="12" fill="#dbeafe" stroke="#3b82f6"/><text x="78" y="510">External entity</text>
+    <rect x="55" y="518" width="16" height="12" rx="6" fill="#dcfce7" stroke="#16a34a"/><text x="78" y="528">Process</text>
+    <ellipse cx="63" cy="542" rx="8" ry="5" fill="#e2e8f0" stroke="#64748b"/><text x="78" y="546">Data store</text>
+    <line x1="55" y1="560" x2="71" y2="560" stroke="#dc2626" stroke-width="2" stroke-dasharray="4 3"/><text x="78" y="564" fill="#dc2626">Trust boundary (Person A scope)</text>
+  </g>
+</svg>
