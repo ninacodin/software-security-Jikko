@@ -522,10 +522,11 @@ Every check below was re-run on the combined code, with the same settings as CI:
 - **Proof the gate fails on HIGH/CRITICAL:**
   - Baseline — Trivy **fails**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839508883
   - After Sadayu's fixes — Trivy **passes**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839516007
-  - After all fixes are merged, the same three gates run locally all pass (Trivy 0, Semgrep 0 of 11, Gitleaks 0 — see §5 "Integrated check").
+  - After all four members' fixes are merged into `main` — **all three gates pass** (Semgrep, Trivy, Gitleaks): https://github.com/ninacodin/software-security-Jikko/actions/runs/41025724094
 
   ![CI baseline — Trivy red](report/person-d/evidence/ci/fig-ci-baseline-trivy-red.png)
   ![CI after fix — Trivy green](report/person-d/evidence/ci/fig-ci-harden-trivy-green.png)
+  ![CI on main after all fixes merged — SAST, SCA and secrets all green](report/person-d/evidence/ci/fig-ci-integrated-all-green.png)
 
 - **Configuration notes**
   - The repo-root `.semgrepignore` excludes `project/starter-app/`, so the Semgrep job copies the
