@@ -49,17 +49,25 @@ The updated function assigns the `user` role on the server and ignores any role 
 
 ![Role assignment before](before-after/registration-before.png)
 
+The request supplied `role=admin` when creating `c-evidence`. The new account could open `/admin` with HTTP 200, showing that the server accepted a privileged role chosen by the client.
+
 **Role assignment — after**
 
 ![Role assignment after](before-after/registration-after.png)
+
+The same registration request created a regular-user account. Its request to `/admin` returned HTTP 403. The right-hand panel records the submitted role and actual response status.
 
 **Duplicate registration — before**
 
 ![Duplicate registration before](before-after/duplicate-before.png)
 
+Registering the existing username `alice` returned HTTP 302, so the duplicate registration was accepted. The POST result is recorded in the panel; the home page on the left is context rather than the POST response.
+
 **Duplicate registration — after**
 
 ![Duplicate registration after](before-after/duplicate-after.png)
+
+The same duplicate username returned HTTP 409 with `username already exists`. This prevents a second account from using an existing identity.
 
 The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
@@ -87,9 +95,13 @@ The query now checks both the note ID and the owner. The owner value comes from 
 
 ![Note ownership before](before-after/ownership-before.png)
 
+While logged in as `alice`, requesting `/api/notes/2` returned HTTP 200 and disclosed the administrator's note. The panel also records successful access to alice's own note as a control case.
+
 **Note ownership — after**
 
 ![Note ownership after](before-after/ownership-after.png)
+
+Alice could still read her own note, but requesting the administrator's note returned HTTP 404 with `not found`. The query now checks both the note ID and its owner.
 
 The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
@@ -117,9 +129,13 @@ The query was changed to select only the fields needed for the user list.
 
 ![Admin response fields before](before-after/admin-before.png)
 
+The administrator's account-list response included a `password` field with a hash for each account. These values were unnecessary for viewing account information.
+
 **Admin response fields — after**
 
 ![Admin response fields after](before-after/admin-after.png)
+
+The account-list response contains only `id`, `username`, and `role`. Removing the password column from the query prevents hashes from entering the response.
 
 The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
@@ -159,17 +175,25 @@ The tests confirm output encoding and separation of data from template source. T
 
 ![Stored HTML and JavaScript before](before-after/xss-before.png)
 
+The stored HTML payload was interpreted by the browser. Playwright recorded actual `C04` JavaScript dialog messages and dismissed them to continue the capture. The panel preserves those observations; a repeated render can trigger the same payload more than once.
+
 **Stored HTML and JavaScript — after**
 
 ![Stored HTML and JavaScript after](before-after/xss-after.png)
+
+The same title and body are displayed as literal tag text. No JavaScript dialogs were observed in the checked flow. This supports the output-escaping change without claiming that every possible XSS payload was tested.
 
 **Stored template expression — before**
 
 ![Stored template expression before](before-after/template-before.png)
 
+The stored body `check {{7*7}}` appeared as `check 49` in search results. The application had treated note content as part of the Jinja template source.
+
 **Stored template expression — after**
 
 ![Stored template expression after](before-after/template-after.png)
+
+Search results retain `check {{7*7}}` exactly. Passing note values into a fixed template keeps the expression as data rather than evaluating it.
 
 The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
@@ -198,9 +222,13 @@ The startup call now explicitly disables debug mode, the debugger, and the reloa
 
 ![Startup configuration before](before-after/debug-before.png)
 
+The configuration check captured `debug=True` from the original entry point by mocking `Flask.run`. This is a startup-configuration test, not an exposed interactive debugger.
+
 **Startup configuration — after**
 
 ![Startup configuration after](before-after/debug-after.png)
+
+The same configuration check captured `debug=False`, `use_debugger=False`, and `use_reloader=False`. Both evidence servers were themselves run without debug mode for safe local capture.
 
 The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
