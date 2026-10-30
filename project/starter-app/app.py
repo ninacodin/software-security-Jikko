@@ -149,9 +149,10 @@ def login():
     username = request.form.get("username") or (request.json or {}).get("username")
     password = request.form.get("password") or (request.json or {}).get("password")
     con = db()
-    q = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (
-        username, hashlib.md5((password or "").encode()).hexdigest())
-    row = con.execute(q).fetchone()
+    # CWE-89 fix: parameterized query — user input is bound, never concatenated into SQL.
+    q = "SELECT * FROM users WHERE username = ? AND password = ?"
+    pw_hash = hashlib.md5((password or "").encode()).hexdigest()
+    row = con.execute(q, (username, pw_hash)).fetchone()
     con.close()
     if not row:
         return "login failed", 401
@@ -201,8 +202,11 @@ def search():
         return "auth required", 401
     term = request.args.get("q", "")
     con = db()
-    q = "SELECT id,title,body FROM notes WHERE owner='%s' AND body LIKE '%%%s%%'" % (user, term)
-    rows = con.execute(q).fetchall()
+    # CWE-89 fix: parameterized query. LIKE metacharacters in user input are escaped so
+    # they match literally (ESCAPE clause), rather than being concatenated into the SQL.
+    like = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    q = "SELECT id,title,body FROM notes WHERE owner = ? AND body LIKE ? ESCAPE '\\'"
+    rows = con.execute(q, (user, "%" + like + "%")).fetchall()
     con.close()
     return render_template_string(SEARCH_PAGE, notes=rows)
 
@@ -223,8 +227,12 @@ def export():
     if not current_user():
         return "auth required", 401
     fmt = request.args.get("fmt", "txt")
-    # convenience "export" feature
-    out = subprocess.run("echo exporting notes as " + fmt, shell=True,
+    # CWE-78 fix: validate against an allowlist, and run without a shell (shell=False) passing
+    # arguments as a list, so no user input is ever interpreted by /bin/sh.
+    allowed = {"txt", "csv", "json"}
+    if fmt not in allowed:
+        return "invalid format", 400
+    out = subprocess.run(["echo", "exporting notes as", fmt], shell=False,
                          capture_output=True, text=True)
     return render_template_string("<pre>{{ output }}</pre>", output=out.stdout)
 
