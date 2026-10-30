@@ -1,0 +1,855 @@
+Person C NoteVault regression test results
+Python: 3.12.15 (main, Oct 14 2026, 01:05:27) [Clang 23.1.3 ]
+Flask==2.0.1
+Werkzeug==2.0.1
+Jinja2==3.0.1
+PyJWT==1.7.1
+requests==2.25.1
+urllib3==1.26.4
+
+Method: the same unittest suite runs first against the working branch, then against
+main:project/starter-app/app.py in a disposable directory. Baseline source is read
+with git show; the working checkout is not replaced. Every test redirects the app
+database into a fresh temporary directory. Startup and export commands are mocked;
+no listening server or real shell export command is started. No TEAM_ID is invented.
+Command: PYTHONDONTWRITEBYTECODE=1 .venv/py312/bin/python -m unittest discover -s project/tests -p 'test_person_c.py' -v
+(Baseline uses the absolute interpreter path and a disposable project directory.)
+
+=== FIXED BRANCH (exit 0) ===
+test_admin_note_access_still_requires_ownership (test_person_c.PersonCSecurityTests.test_admin_note_access_still_requires_ownership) ... /home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/jwt/api_jwt.py:125: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = timegm(datetime.utcnow().utctimetuple())
+ok
+test_admin_response_excludes_password_hashes (test_person_c.PersonCSecurityTests.test_admin_response_excludes_password_hashes) ... ok
+test_admin_still_rejects_anonymous_and_regular_users (test_person_c.PersonCSecurityTests.test_admin_still_rejects_anonymous_and_regular_users) ... ok
+test_database_rejects_duplicate_username (test_person_c.PersonCSecurityTests.test_database_rejects_duplicate_username) ... ok
+test_direct_startup_disables_debug_without_starting_a_server (test_person_c.PersonCSecurityTests.test_direct_startup_disables_debug_without_starting_a_server) ... /home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/scaffold.py:799: DeprecationWarning: 'pkgutil.get_loader' is deprecated and slated for removal in Python 3.14; use importlib.util.find_spec() instead
+  loader = pkgutil.get_loader(root_mod_name)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1003: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  parts = parts or [ast.Str("")]
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1000: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  _convert(elem) if is_dynamic else ast.Str(s=elem)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/runtimes/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/ast.py:587: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead
+  return Constant(*args, **kwargs)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1007: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  if isinstance(p, ast.Str) and isinstance(ret[-1], ast.Str):
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1008: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead
+  ret[-1] = ast.Str(ret[-1].s + p.s)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1008: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  ret[-1] = ast.Str(ret[-1].s + p.s)
+ok
+test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) ... ok
+test_export_escapes_subprocess_output_without_running_a_command (test_person_c.PersonCSecurityTests.test_export_escapes_subprocess_output_without_running_a_command) ... ok
+test_form_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_form_registration_cannot_assign_admin_role) ... ok
+test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) ... ok
+test_json_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_json_registration_cannot_assign_admin_role) ... ok
+test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) ... ok
+test_normal_notes_render_without_leaking_another_users_notes (test_person_c.PersonCSecurityTests.test_normal_notes_render_without_leaking_another_users_notes) ... ok
+test_normal_registration_and_login_still_work (test_person_c.PersonCSecurityTests.test_normal_registration_and_login_still_work) ... ok
+test_note_api_requires_authentication (test_person_c.PersonCSecurityTests.test_note_api_requires_authentication) ... ok
+test_note_owner_can_read_own_note (test_person_c.PersonCSecurityTests.test_note_owner_can_read_own_note) ... ok
+test_other_owner_and_missing_note_are_indistinguishable (test_person_c.PersonCSecurityTests.test_other_owner_and_missing_note_are_indistinguishable) ... ok
+test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.057s
+
+OK
+
+=== BASELINE main (exit 1) ===
+test_admin_note_access_still_requires_ownership (test_person_c.PersonCSecurityTests.test_admin_note_access_still_requires_ownership) ... /home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/jwt/api_jwt.py:125: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  now = timegm(datetime.utcnow().utctimetuple())
+FAIL
+test_admin_response_excludes_password_hashes (test_person_c.PersonCSecurityTests.test_admin_response_excludes_password_hashes) ... FAIL
+test_admin_still_rejects_anonymous_and_regular_users (test_person_c.PersonCSecurityTests.test_admin_still_rejects_anonymous_and_regular_users) ... ok
+test_database_rejects_duplicate_username (test_person_c.PersonCSecurityTests.test_database_rejects_duplicate_username) ... FAIL
+test_direct_startup_disables_debug_without_starting_a_server (test_person_c.PersonCSecurityTests.test_direct_startup_disables_debug_without_starting_a_server) ... /home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/scaffold.py:799: DeprecationWarning: 'pkgutil.get_loader' is deprecated and slated for removal in Python 3.14; use importlib.util.find_spec() instead
+  loader = pkgutil.get_loader(root_mod_name)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1003: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  parts = parts or [ast.Str("")]
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1000: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  _convert(elem) if is_dynamic else ast.Str(s=elem)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/runtimes/cpython-3.12.15-linux-x86_64-gnu/lib/python3.12/ast.py:587: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead
+  return Constant(*args, **kwargs)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1007: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  if isinstance(p, ast.Str) and isinstance(ret[-1], ast.Str):
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1008: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead
+  ret[-1] = ast.Str(ret[-1].s + p.s)
+/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/routing.py:1008: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+  ret[-1] = ast.Str(ret[-1].s + p.s)
+FAIL
+test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) ...
+  test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) (username='admin') ... FAIL
+  test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) (username='alice') ... FAIL
+test_export_escapes_subprocess_output_without_running_a_command (test_person_c.PersonCSecurityTests.test_export_escapes_subprocess_output_without_running_a_command) ... FAIL
+test_form_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_form_registration_cannot_assign_admin_role) ... FAIL
+test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) ...
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'missing-password'}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'password': 'missing-username'}) ... FAIL
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': '', 'password': 'password'}) ... FAIL
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': '   ', 'password': 'password'}) ... FAIL
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'empty-password', 'password': ''}) ... FAIL
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': None, 'password': 'password'}) ... FAIL
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 123, 'password': 'password'}) ... FAIL
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': ['alice'], 'password': 'password'}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'null-password', 'password': None}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'number-password', 'password': 123}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'object-password', 'password': {}}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload=[]) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload=['username', 'password']) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload='not-an-object') ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (form={}) ... ERROR
+  test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (form={'username': 'form-user', 'password': ''}) ... ERROR
+test_json_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_json_registration_cannot_assign_admin_role) ... FAIL
+test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) ...
+  test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) (data='null') ... ERROR
+  test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) (data='plain text') ... ERROR
+test_normal_notes_render_without_leaking_another_users_notes (test_person_c.PersonCSecurityTests.test_normal_notes_render_without_leaking_another_users_notes) ... ok
+test_normal_registration_and_login_still_work (test_person_c.PersonCSecurityTests.test_normal_registration_and_login_still_work) ... ok
+test_note_api_requires_authentication (test_person_c.PersonCSecurityTests.test_note_api_requires_authentication) ... ok
+test_note_owner_can_read_own_note (test_person_c.PersonCSecurityTests.test_note_owner_can_read_own_note) ... ok
+test_other_owner_and_missing_note_are_indistinguishable (test_person_c.PersonCSecurityTests.test_other_owner_and_missing_note_are_indistinguishable) ... FAIL
+test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) ...
+  test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) (path='/') ... FAIL
+  test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) (path='/search?q=') ... FAIL
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'missing-password'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': ['alice'], 'password': 'password'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 116, in register
+    con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
+sqlite3.ProgrammingError: Error binding parameter 1: type 'list' is not supported
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'null-password', 'password': None})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'number-password', 'password': 123})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'int' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'object-password', 'password': {}})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'dict' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload=[])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload=['username', 'password'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 112, in register
+    username = request.form.get("username") or (request.json or {}).get("username")
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'get'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload='not-an-object')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 123, in test_invalid_registration_fields_return_400
+    response = self.client.post("/register", json=payload)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 112, in register
+    username = request.form.get("username") or (request.json or {}).get("username")
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (form={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 127, in test_invalid_registration_fields_return_400
+    self.assertEqual(self.client.post("/register", data=data).status_code, 400)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (form={'username': 'form-user', 'password': ''})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 127, in test_invalid_registration_fields_return_400
+    self.assertEqual(self.client.post("/register", data=data).status_code, 400)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) (data='null')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 136, in test_malformed_or_non_json_registration_returns_400
+    response = self.client.post("/register", data=data, content_type=content_type)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+ERROR: test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) (data='plain text')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 136, in test_malformed_or_non_json_registration_returns_400
+    response = self.client.post("/register", data=data, content_type=content_type)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1132, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/testing.py", line 216, in open
+    return super().open(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1072, in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 943, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/werkzeug/test.py", line 1229, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2088, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2073, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 2070, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1515, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1513, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/danaiphong/Documents/ChatGPT/Software security/software-security-Jikko/.venv/py312/lib/python3.12/site-packages/flask/app.py", line 1499, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**req.view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/starter-app/app.py", line 117, in register
+    (username, hashlib.md5(password.encode()).hexdigest(), role))
+                           ^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+
+======================================================================
+FAIL: test_admin_note_access_still_requires_ownership (test_person_c.PersonCSecurityTests.test_admin_note_access_still_requires_ownership)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 161, in test_admin_note_access_still_requires_ownership
+    self.assertEqual(self.client.get("/api/notes/1").status_code, 404)
+AssertionError: 200 != 404
+
+======================================================================
+FAIL: test_admin_response_excludes_password_hashes (test_person_c.PersonCSecurityTests.test_admin_response_excludes_password_hashes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 177, in test_admin_response_excludes_password_hashes
+    self.assertEqual(set(user), {"id", "username", "role"})
+AssertionError: Items in the first set but not the second:
+'password'
+
+======================================================================
+FAIL: test_database_rejects_duplicate_username (test_person_c.PersonCSecurityTests.test_database_rejects_duplicate_username)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 95, in test_database_rejects_duplicate_username
+    with self.assertRaises(sqlite3.IntegrityError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: IntegrityError not raised
+
+======================================================================
+FAIL: test_direct_startup_disables_debug_without_starting_a_server (test_person_c.PersonCSecurityTests.test_direct_startup_disables_debug_without_starting_a_server)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 240, in test_direct_startup_disables_debug_without_starting_a_server
+    self.assertIs(run.call_args.kwargs.get("debug"), False)
+AssertionError: True is not False
+
+======================================================================
+FAIL: test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) (username='admin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 84, in test_duplicate_seeded_names_cannot_take_over_existing_accounts
+    self.assertEqual(response.status_code, 409)
+AssertionError: 302 != 409
+
+======================================================================
+FAIL: test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) (username='alice')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 84, in test_duplicate_seeded_names_cannot_take_over_existing_accounts
+    self.assertEqual(response.status_code, 409)
+AssertionError: 302 != 409
+
+======================================================================
+FAIL: test_export_escapes_subprocess_output_without_running_a_command (test_person_c.PersonCSecurityTests.test_export_escapes_subprocess_output_without_running_a_command)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 224, in test_export_escapes_subprocess_output_without_running_a_command
+    self.assertNotIn("<script>", text)
+AssertionError: '<script>' unexpectedly found in '<pre><script>alert("export")</script> & exported</pre>'
+
+======================================================================
+FAIL: test_form_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_form_registration_cannot_assign_admin_role)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 61, in test_form_registration_cannot_assign_admin_role
+    self.assertEqual(notevault.role_of("form-user"), "user")
+AssertionError: 'admin' != 'user'
+- admin
++ user
+
+
+======================================================================
+FAIL: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'password': 'missing-username'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 124, in test_invalid_registration_fields_return_400
+    self.assertEqual(response.status_code, 400)
+AssertionError: 302 != 400
+
+======================================================================
+FAIL: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': '', 'password': 'password'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 124, in test_invalid_registration_fields_return_400
+    self.assertEqual(response.status_code, 400)
+AssertionError: 302 != 400
+
+======================================================================
+FAIL: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': '   ', 'password': 'password'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 124, in test_invalid_registration_fields_return_400
+    self.assertEqual(response.status_code, 400)
+AssertionError: 302 != 400
+
+======================================================================
+FAIL: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 'empty-password', 'password': ''})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 124, in test_invalid_registration_fields_return_400
+    self.assertEqual(response.status_code, 400)
+AssertionError: 302 != 400
+
+======================================================================
+FAIL: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': None, 'password': 'password'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 124, in test_invalid_registration_fields_return_400
+    self.assertEqual(response.status_code, 400)
+AssertionError: 302 != 400
+
+======================================================================
+FAIL: test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) (payload={'username': 123, 'password': 'password'})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 124, in test_invalid_registration_fields_return_400
+    self.assertEqual(response.status_code, 400)
+AssertionError: 302 != 400
+
+======================================================================
+FAIL: test_json_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_json_registration_cannot_assign_admin_role)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 51, in test_json_registration_cannot_assign_admin_role
+    self.assertEqual(notevault.role_of("json-user"), "user")
+AssertionError: 'admin' != 'user'
+- admin
++ user
+
+
+======================================================================
+FAIL: test_other_owner_and_missing_note_are_indistinguishable (test_person_c.PersonCSecurityTests.test_other_owner_and_missing_note_are_indistinguishable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 152, in test_other_owner_and_missing_note_are_indistinguishable
+    self.assertEqual(other.status_code, 404)
+AssertionError: 200 != 404
+
+======================================================================
+FAIL: test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) (path='/')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 197, in test_stored_html_is_escaped_on_home_and_search
+    self.assertNotIn("<script>", text)
+AssertionError: '<script>' unexpectedly found in '\n<!doctype html><title>NoteVault</title>\n<h1>NoteVault</h1>\n<p>Signed in as <b>alice</b> · <a href="/logout">logout</a>\n  </p>\n<form method=post action="/notes"><input name=title placeholder=title>\n  <input name=body placeholder=note><button>Add note</button></form>\n<h3>Your notes</h3><li>#1 <b>groceries</b>: milk, eggs</li><li>#4 <b><script>alert("title")</script>{{7*7}}</b>: <img src=x onerror=alert("body")> & hello {{7*7}}</li>\n<form action="/search"><input name=q placeholder="search notes"><button>Search</button></form>\n'
+
+======================================================================
+FAIL: test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) (path='/search?q=')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/notevault-person-c-baseline-13uejmkg/project/tests/test_person_c.py", line 197, in test_stored_html_is_escaped_on_home_and_search
+    self.assertNotIn("<script>", text)
+AssertionError: '<script>' unexpectedly found in '<a href=/>back</a><ul><li>groceries: milk, eggs</li><li><script>alert("title")</script>49: <img src=x onerror=alert("body")> & hello 49</li></ul>'
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.056s
+
+FAILED (failures=18, errors=13)
