@@ -14,8 +14,8 @@ import hmac
 import os
 import sqlite3
 import subprocess
-from collections.abc import Mapping
 from datetime import datetime, timedelta, timezone
+from collections.abc import Mapping
 
 import bcrypt
 import jwt  # PyJWT
