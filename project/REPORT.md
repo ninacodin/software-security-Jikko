@@ -176,6 +176,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Anyone with the repo or image can impersonate any user, including admin; the key cannot be rotated. |
 | Evidence | Baseline `/admin` → `HTTP 200` with the forged token (verified by running). |
 
+![1-before-f04-forged-admin](report/person-b/screenshots/1-before-f04-forged-admin.png)
+
 ### Finding F-05 — `alg:none` left in the JWT allowlist · *owner: Phuriphat*
 | Field | Value |
 |---|---|
@@ -185,6 +187,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `current_user()` — `algorithms=["HS256", "none"]` |
 | Reproduction | Sent an unsigned `{"alg":"none"}` / `{"sub":"admin"}` token → **rejected** (`HTTP 403`): PyJWT 1.7.1 raises `InvalidKeyError` because a key is supplied. |
 | Impact | Not exploitable as shipped, but becomes an auth bypass if the key is ever empty or the library changes. Removed as defence-in-depth. |
+
+![2-before-f05-alg-none](report/person-b/screenshots/2-before-f05-alg-none.png)
 
 ### Finding F-06 — Passwords hashed with unsalted MD5 · *owner: Phuriphat*
 | Field | Value |
@@ -196,6 +200,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Take the hashes leaked by F-02 or F-11 and crack them offline (`hashcat -m 0`); equal passwords share a hash. |
 | Impact | Mass credential disclosure on any database or response leak. |
 
+![3-before-f06-md5](report/person-b/screenshots/3-before-f06-md5.png)
+
 ### Finding F-07 — Session cookie without security flags · *owner: Phuriphat*
 | Field | Value |
 |---|---|
@@ -206,6 +212,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | `Set-Cookie` has no `HttpOnly`, `Secure` or `SameSite`. |
 | Impact | Cookie readable by injected JS, sent over plain HTTP, no CSRF defence. |
 
+![4-before-f07-cookie](report/person-b/screenshots/4-before-f07-cookie.png)
+
 ### Finding F-08 — Session tokens never expire · *owner: Phuriphat*
 | Field | Value |
 |---|---|
@@ -215,6 +223,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/login` — `jwt.encode({"sub": username}, …)` |
 | Reproduction | Decode the token: no `exp` claim. |
 | Impact | A stolen token works forever. |
+
+![5-before-f08-no-exp](report/person-b/screenshots/5-before-f08-no-exp.png)
 
 ### Finding F-09 — Self-assigned admin role and duplicate-username takeover · *owner: Danaiphong*
 | Field | Value |
@@ -345,6 +355,8 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 ```
 - **Why:** the key leaves the source and the image, is injected at runtime and can be rotated. The app fails closed if it is missing.
 - **Proof:** the token forged with the old key → `HTTP 403`; `docker compose up` without `APP_SECRET` aborts.
+![6-after-f04-forged-rejected](report/person-b/screenshots/6-after-f04-forged-rejected.png)
+
 
 ### Fix for F-05 — HS256 only · commit `47b12b6` (Phuriphat)
 ```diff
@@ -352,6 +364,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 + data = jwt.decode(tok, SECRET, algorithms=["HS256"])
 ```
 - **Proof:** `alg:none` token → `HTTP 403`; `none` is no longer an accepted algorithm.
+![7-after-f05-hs256-only](report/person-b/screenshots/7-after-f05-hs256-only.png)
 
 ### Fix for F-06 — bcrypt · commit `29a125e` (Phuriphat)
 ```diff
@@ -363,6 +376,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 ```
 - **Why:** per-hash salt and adaptive cost; `bcrypt.checkpw` compares in constant time. Adds `bcrypt==4.2.1`.
 - **Proof:** DB rows store `$2b$12$…`; correct password → `302`, wrong → `401`.
+![8-after-f06-bcrypt](report/person-b/screenshots/8-after-f06-bcrypt.png)
 
 ### Fix for F-07 — cookie flags · commit `b576f57` (Phuriphat)
 ```diff
@@ -370,7 +384,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 + resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
 ```
 - **Proof:** `Set-Cookie: session=…; Secure; HttpOnly; Path=/; SameSite=Lax`.
-
+![9-after-f07-cookie](report/person-b/screenshots/9-after-f07-cookie.png)
 ### Fix for F-08 — token expiry · commit `59132fa` (Phuriphat)
 ```diff
 - tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
@@ -378,7 +392,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 + tok = jwt.encode({"sub": username, "iat": now, "exp": now + timedelta(hours=1)}, SECRET, algorithm="HS256")
 ```
 - **Proof:** decoded payload has `exp − iat = 3600`; `jwt.decode()` rejects expired tokens.
-
+![10-after-f08-exp](report/person-b/screenshots/10-after-f08-exp.png)
 ### Fix for F-09 — server-assigned role, unique usernames · commit `574af26` (Danaiphong)
 ```diff
 - role = request.form.get("role") or (request.json or {}).get("role") or "user"
