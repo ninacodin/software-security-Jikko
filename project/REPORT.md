@@ -19,7 +19,7 @@
 
 | Member | Tool | How it was used |
 |---|---|---|
-| A | `<!-- TODO: A fills in -->` | |
+| A | Claude Code | Reviewed the three injection fixes (F-01–F-03), **verified them by running** the before/after exploits in Docker, and drafted the threat model (DFD + STRIDE) and the Part A finding & remediation write-ups. All tool output was run and checked by the member, who can explain each payload and fix. |
 | B | Claude Code | Reviewed the code, implemented and tested the auth/session/crypto fixes (F-04 – F-08), drafted the first report skeleton. All fixes reviewed and run by the member. |
 | C | Codex | Reviewed Part C code, proposed patches and the regression test suite, drafted notes. The member checked the results and explains the fixes in their own words. |
 | D | Claude Code | Helped run Trivy / pip-audit / Cosign, write the Dockerfile and CI workflow, and merge the four members' sections into this report. All tool output in `report/person-d/evidence/` comes from real runs. |
