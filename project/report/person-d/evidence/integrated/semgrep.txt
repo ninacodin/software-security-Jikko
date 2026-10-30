@@ -1,0 +1,28 @@
+# Integrated code (A+B+C+D merged), commit 43f65f2 -- 2026-10-30T15:28:20
+$ semgrep scan --config p/default --config p/owasp-top-ten --severity ERROR --error .   (on a copy of project/starter-app, as in CI)
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 6 files tracked by git with 334 Code rules:
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>      45       6          Community     334                                                                
+  python           96       1                                                                                           
+  yaml              9       1                                                                                           
+  dockerfile        4       1                                                                                           
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 0 (0 blocking)
+ • Rules run: 153
+ • Targets scanned: 6
+ • Parsed lines: ~99.5%
+ • No ignore information available
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 153 rules on 6 files: 0 findings.
+(need more rules? `semgrep login` for additional free Semgrep Registry rules)
+A new version of Semgrep is available. See https://semgrep.dev/docs/upgrading
+If Semgrep missed a finding, please send us feedback to let us know!
+See https://semgrep.dev/docs/reporting-false-negatives/
+exit code: 0

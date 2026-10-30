@@ -1,0 +1,33 @@
+# Integrated code (A+B+C+D merged), commit 43f65f2 -- 2026-10-30T15:28:20
+$ trivy fs --scanners vuln,secret,misconfig --severity HIGH,CRITICAL --exit-code 1 project/starter-app
+2026-10-30T08:28:21Z	INFO	[vulndb] Need to update DB
+2026-10-30T08:28:21Z	INFO	[vulndb] Downloading vulnerability DB...
+2026-10-30T08:28:21Z	INFO	[vulndb] Downloading artifact...	repo="mirror.gcr.io/aquasec/trivy-db:2"
+2026-10-30T08:28:33Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-10-30T08:28:33Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-10-30T08:28:33Z	INFO	[checks-client] Need to update the checks bundle
+2026-10-30T08:28:33Z	INFO	[checks-client] Downloading the checks bundle...
+2026-10-30T08:28:35Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln,misconfig' to disable secret scanning
+2026-10-30T08:28:35Z	INFO	[secret] Please see https://trivy.dev/docs/v0.76/guide/scanner/secret#recommendation for faster secret detection
+2026-10-30T08:28:35Z	WARN	[pip] Unable to find python `site-packages` directory. License detection is skipped.	err="unable to find path to Python executable"
+2026-10-30T08:28:35Z	INFO	Number of language-specific files	num=1
+2026-10-30T08:28:35Z	INFO	[pip] Detecting vulnerabilities...
+2026-10-30T08:28:35Z	INFO	Detected config files	num=1
+📣 [34mNotices:[0m
+  - Version 0.76.1 of Trivy is now available, current version is 0.76.0
+To suppress version checks, run Trivy scans with the --skip-version-check flag
+
+Report Summary
+
+┌──────────────────┬────────────┬─────────────────┬─────────┬───────────────────┐
+│      Target      │    Type    │ Vulnerabilities │ Secrets │ Misconfigurations │
+├──────────────────┼────────────┼─────────────────┼─────────┼───────────────────┤
+│ requirements.txt │    pip     │        0        │    -    │         -         │
+├──────────────────┼────────────┼─────────────────┼─────────┼───────────────────┤
+│ Dockerfile       │ dockerfile │        -        │    -    │         0         │
+└──────────────────┴────────────┴─────────────────┴─────────┴───────────────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+exit code: 0

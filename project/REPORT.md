@@ -49,9 +49,10 @@ logged-in user could run shell commands **as root** in the container (F-03 + F-1
 every user's notes and password hashes (F-02, F-10).
 
 **After:** all 15 findings are fixed on the merged branch. Every fix has a commit, and the
-exploits were re-run and now fail (§5). On the integrated code: Person C's 17 regression tests
-pass, pip-audit reports **0** known vulnerabilities, and the CI gate (Semgrep + Trivy + Gitleaks)
-fails the build on any HIGH/CRITICAL finding (§7).
+exploits were re-run and now fail (§5). On the integrated code all security gates are clean:
+Trivy **0** HIGH/CRITICAL (deps + Dockerfile + secrets), Semgrep **0** blocking findings (was 11),
+Gitleaks **0** leaks, pip-audit **0** known vulnerabilities, and Person C's 17 regression tests
+pass. The CI gate fails the build on any HIGH/CRITICAL finding (§7).
 
 ---
 
@@ -454,11 +455,17 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** immutable base (digest), no secret in any layer, non-root user, and an allowlist `.dockerignore` (only `app.py`, `requirements.txt`).
 - **Proof:** Trivy misconfig → **0**; `docker compose exec notevault whoami` → `appuser`.
 
-### Integrated regression check
+### Integrated check (all four branches merged)
 
-After all four branches were merged, Person C's suite was re-run on the combined code
-(Python 3.12, final `requirements.txt`, random `APP_SECRET`): **17/17 tests pass**
-([integrated/unittest.txt](report/person-d/evidence/integrated/unittest.txt)).
+Every check below was re-run on the combined code, with the same settings as CI:
+
+| Check | Baseline | Integrated code | Evidence |
+|---|---|---|---|
+| Trivy — deps + Dockerfile + secrets (HIGH/CRITICAL) | 16 CVEs + 2 misconfigs | **0** | [trivy-fs.txt](report/person-d/evidence/integrated/trivy-fs.txt) |
+| pip-audit | 80 advisories | **0** | [pip-audit.txt](report/person-d/evidence/integrated/pip-audit.txt) |
+| Semgrep `p/default` + `p/owasp-top-ten` (blocking) | 11 | **0** (6 files scanned) | [semgrep.txt](report/person-d/evidence/integrated/semgrep.txt) |
+| Gitleaks | 0 | **0** | [gitleaks.txt](report/person-d/evidence/integrated/gitleaks.txt) |
+| Regression tests (Person C suite) | fail (`failures=18, errors=13`) | **17/17 pass** | [unittest.txt](report/person-d/evidence/integrated/unittest.txt) |
 
 ---
 
@@ -501,6 +508,7 @@ After all four branches were merged, Person C's suite was re-run on the combined
 - **Proof the gate fails on HIGH/CRITICAL:**
   - Baseline — Trivy **fails**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839508883
   - After D's fixes — Trivy **passes**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839516007
+  - After all fixes are merged, the same three gates run locally all pass (Trivy 0, Semgrep 0 of 11, Gitleaks 0 — see §5 "Integrated check").
 
   ![CI baseline — Trivy red](report/person-d/evidence/ci/fig-ci-baseline-trivy-red.png)
   ![CI after fix — Trivy green](report/person-d/evidence/ci/fig-ci-harden-trivy-green.png)
