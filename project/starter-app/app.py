@@ -14,14 +14,16 @@ import hmac
 import os
 import sqlite3
 import subprocess
+from datetime import datetime, timedelta, timezone
 from collections.abc import Mapping
 
+import bcrypt
 import jwt  # PyJWT
 from flask import Flask, request, jsonify, render_template_string, redirect, make_response
 
 app = Flask(__name__)
 DB = "/tmp/notevault.db"
-SECRET = "notevault-dev-secret"  # used to sign session tokens
+SECRET = os.environ["APP_SECRET"]  # session-token signing key; must be supplied at runtime
 
 # Anti-copying: every team's build is seeded with a marker derived from their own TEAM_ID, so
 # any evidence a team submits (SQLi dump, IDOR response, admin-panel screenshot) that shows the
@@ -32,6 +34,19 @@ TEAM_SALT = os.environ.get("TEAM_SALT", "notevault-anti-copy-dev-salt")
 
 def team_marker():
     return hmac.new(TEAM_SALT.encode(), TEAM_ID.encode(), hashlib.sha256).hexdigest()[:12]
+
+
+def hash_pw(password):
+    """Salted, adaptive password hash (bcrypt). Replaces unsalted MD5."""
+    return bcrypt.hashpw((password or "").encode(), bcrypt.gensalt()).decode()
+
+
+def verify_pw(password, stored):
+    """Constant-time verify against a stored bcrypt hash."""
+    try:
+        return bcrypt.checkpw((password or "").encode(), (stored or "").encode())
+    except (ValueError, TypeError):
+        return False
 
 
 PAGE = """
@@ -81,8 +96,8 @@ def seed():
         "CREATE TABLE notes (id INTEGER PRIMARY KEY, owner TEXT, title TEXT, body TEXT);"
     )
     con.executemany("INSERT INTO users (username, password, role) VALUES (?,?,?)",
-                    [("alice", hashlib.md5(b"alicepw").hexdigest(), "user"),
-                     ("admin", hashlib.md5(b"admin123").hexdigest(), "admin")])
+                    [("alice", hash_pw("alicepw"), "user"),
+                     ("admin", hash_pw("admin123"), "admin")])
     con.executemany("INSERT INTO notes (owner, title, body) VALUES (?,?,?)",
                     [("alice", "groceries", "milk, eggs"),
                      ("admin", "infra", "prod db password is hunter2"),
@@ -96,7 +111,7 @@ def current_user():
     if not tok:
         return None
     try:
-        data = jwt.decode(tok, SECRET, algorithms=["HS256", "none"])
+        data = jwt.decode(tok, SECRET, algorithms=["HS256"])
         return data.get("sub")
     except Exception:
         return None
@@ -135,7 +150,7 @@ def register():
     try:
         # Public registration cannot grant a privileged role.
         con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
-                    (username, hashlib.md5(password.encode()).hexdigest(), "user"))
+                    (username, hash_pw(password), "user"))
         con.commit()
     except sqlite3.IntegrityError:
         return jsonify(error="username already exists"), 409
@@ -149,16 +164,15 @@ def login():
     username = request.form.get("username") or (request.json or {}).get("username")
     password = request.form.get("password") or (request.json or {}).get("password")
     con = db()
-    # CWE-89 fix: parameterized query — user input is bound, never concatenated into SQL.
-    q = "SELECT * FROM users WHERE username = ? AND password = ?"
-    pw_hash = hashlib.md5((password or "").encode()).hexdigest()
-    row = con.execute(q, (username, pw_hash)).fetchone()
+    row = con.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
     con.close()
-    if not row:
+    if not row or not verify_pw(password, row["password"]):
         return "login failed", 401
-    tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
+    now = datetime.now(timezone.utc)
+    tok = jwt.encode({"sub": username, "iat": now, "exp": now + timedelta(hours=1)},
+                     SECRET, algorithm="HS256")
     resp = make_response(redirect("/"))
-    resp.set_cookie("session", tok)
+    resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
     return resp
 
 

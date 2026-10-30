@@ -2,7 +2,8 @@
 # (base pinning, non-root user, no baked secrets, minimal layers).
 FROM python:3.12
 
-ENV APP_SECRET=notevault-dev-secret
+# APP_SECRET is NOT baked into the image — it is injected at runtime
+# (docker compose / orchestrator secret). See docker-compose.yml.
 
 WORKDIR /app
 COPY . .
