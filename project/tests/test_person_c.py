@@ -4,7 +4,6 @@ Run from the repository root:
     python -m unittest discover -s project/tests -p 'test_person_c.py' -v
 """
 
-import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -175,8 +174,13 @@ class PersonCSecurityTests(unittest.TestCase):
         self.assertEqual({user["username"] for user in users}, {"alice", "admin"})
         for user in users:
             self.assertEqual(set(user), {"id", "username", "role"})
-        for password in (b"alicepw", b"admin123"):
-            self.assertNotIn(hashlib.md5(password).hexdigest(), response.get_data(as_text=True))
+        con = notevault.db()
+        try:
+            stored_hashes = [r["password"] for r in con.execute("SELECT password FROM users")]
+        finally:
+            con.close()
+        for stored_hash in stored_hashes:
+            self.assertNotIn(stored_hash, response.get_data(as_text=True))
 
     def test_admin_still_rejects_anonymous_and_regular_users(self):
         self.assertEqual(self.client.get("/admin").status_code, 403)
