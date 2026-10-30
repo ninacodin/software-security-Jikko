@@ -15,6 +15,7 @@ import os
 import sqlite3
 import subprocess
 from datetime import datetime, timedelta, timezone
+from collections.abc import Mapping
 
 import bcrypt
 import jwt  # PyJWT
@@ -55,7 +56,11 @@ PAGE = """
   {% if is_admin %}· <a href="/admin">admin</a>{% endif %}</p>
 <form method=post action="/notes"><input name=title placeholder=title>
   <input name=body placeholder=note><button>Add note</button></form>
-<h3>Your notes</h3>{{ notes_html|safe }}
+<h3>Your notes</h3><ul>
+{% for note in notes %}
+<li>#{{ note.id }} <b>{{ note.title }}</b>: {{ note.body }}</li>
+{% endfor %}
+</ul>
 <form action="/search"><input name=q placeholder="search notes"><button>Search</button></form>
 {% else %}
 <form method=post action="/login">user <input name=username> pass <input name=password type=password>
@@ -63,6 +68,16 @@ PAGE = """
 <form method=post action="/register">new: <input name=username> <input name=password type=password>
   <button>Register</button></form>
 {% endif %}
+"""
+
+
+SEARCH_PAGE = """
+<!doctype html><title>NoteVault search</title>
+<a href="/">back</a><ul>
+{% for note in notes %}
+<li>{{ note.title }}: {{ note.body }}</li>
+{% endfor %}
+</ul>
 """
 
 
@@ -76,7 +91,8 @@ def seed():
     con = db()
     con.executescript(
         "DROP TABLE IF EXISTS users; DROP TABLE IF EXISTS notes;"
-        "CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT);"
+        "CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, "
+        "password TEXT NOT NULL, role TEXT NOT NULL);"
         "CREATE TABLE notes (id INTEGER PRIMARY KEY, owner TEXT, title TEXT, body TEXT);"
     )
     con.executemany("INSERT INTO users (username, password, role) VALUES (?,?,?)",
@@ -111,27 +127,35 @@ def role_of(username):
 @app.route("/")
 def home():
     user = current_user()
-    notes_html = ""
+    notes = []
     if user:
         con = db()
-        rows = con.execute("SELECT id,title,body FROM notes WHERE owner = ?", (user,)).fetchall()
+        notes = con.execute("SELECT id,title,body FROM notes WHERE owner = ?", (user,)).fetchall()
         con.close()
-        notes_html = "".join(
-            "<li>#%d <b>%s</b>: %s</li>" % (r["id"], r["title"], r["body"]) for r in rows)
     return render_template_string(PAGE, user=user, is_admin=(user and role_of(user) == "admin"),
-                                  notes_html=notes_html)
+                                  notes=notes)
 
 
 @app.route("/register", methods=["POST"])
 def register():
-    username = request.form.get("username") or (request.json or {}).get("username")
-    password = request.form.get("password") or (request.json or {}).get("password")
-    role = request.form.get("role") or (request.json or {}).get("role") or "user"
+    data = request.get_json(silent=True) if request.is_json else request.form
+    if not isinstance(data, Mapping):
+        return jsonify(error="invalid registration data"), 400
+    username = data.get("username")
+    password = data.get("password")
+    if (not isinstance(username, str) or not username.strip()
+            or not isinstance(password, str) or not password):
+        return jsonify(error="username and password must be non-empty strings"), 400
     con = db()
-    con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
-                (username, hash_pw(password), role))
-    con.commit()
-    con.close()
+    try:
+        # Public registration cannot grant a privileged role.
+        con.execute("INSERT INTO users (username, password, role) VALUES (?,?,?)",
+                    (username, hash_pw(password), "user"))
+        con.commit()
+    except sqlite3.IntegrityError:
+        return jsonify(error="username already exists"), 409
+    finally:
+        con.close()
     return redirect("/")
 
 
@@ -175,10 +199,12 @@ def add_note():
 
 @app.route("/api/notes/<int:nid>")
 def api_note(nid):
-    if not current_user():
+    user = current_user()
+    if not user:
         return jsonify(error="auth required"), 401
     con = db()
-    r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ?", (nid,)).fetchone()
+    r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ? AND owner = ?",
+                    (nid, user)).fetchone()
     con.close()
     return (jsonify(dict(r)) if r else (jsonify(error="not found"), 404))
 
@@ -196,8 +222,7 @@ def search():
     q = "SELECT id,title,body FROM notes WHERE owner = ? AND body LIKE ? ESCAPE '\\'"
     rows = con.execute(q, (user, "%" + like + "%")).fetchall()
     con.close()
-    return render_template_string("<a href=/>back</a><ul>" +
-        "".join("<li>%s: %s</li>" % (r["title"], r["body"]) for r in rows) + "</ul>")
+    return render_template_string(SEARCH_PAGE, notes=rows)
 
 
 @app.route("/admin")
@@ -206,7 +231,7 @@ def admin():
     if not user or role_of(user) != "admin":
         return "forbidden", 403
     con = db()
-    rows = con.execute("SELECT id,username,password,role FROM users").fetchall()
+    rows = con.execute("SELECT id,username,role FROM users").fetchall()
     con.close()
     return jsonify([dict(r) for r in rows])
 
@@ -223,9 +248,10 @@ def export():
         return "invalid format", 400
     out = subprocess.run(["echo", "exporting notes as", fmt], shell=False,
                          capture_output=True, text=True)
-    return "<pre>%s</pre>" % out.stdout
+    return render_template_string("<pre>{{ output }}</pre>", output=out.stdout)
 
 
 if __name__ == "__main__":
     seed()
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False,
+            use_debugger=False, use_reloader=False)
