@@ -10,7 +10,7 @@
 | Field | Value |
 |---|---|
 | Team name | Jikko |
-| Members (name + ID) | Supawan — 6631503042 (A) · `<!-- TODO: name + ID -->` (B, git `qssomme`) · Danaiphong Songsikhwa (Bas) — `<!-- TODO: ID -->` (C) · Sadayu Suriya — `<!-- TODO: ID -->` (D) |
+| Members (name + ID) | Supawan Kongsapcharoen — 6631503042 · Phuriphat Chantiuaong — 6631503034 · Danaiphong Songsikhwa — 6631503106 · Sadayu Suriya — 6631503040 |
 | Target application | NoteVault (`project/starter-app/`) |
 | Repository URL | https://github.com/ninacodin/software-security-Jikko |
 | Date | 2026-10-30 |
@@ -19,10 +19,10 @@
 
 | Member | Tool | How it was used |
 |---|---|---|
-| A | Claude Code | Reviewed the three injection fixes (F-01–F-03), **verified them by running** the before/after exploits in Docker, and drafted the threat model (DFD + STRIDE) and the Part A finding & remediation write-ups. All tool output was run and checked by the member, who can explain each payload and fix. |
-| B | Claude Code | Reviewed the code, implemented and tested the auth/session/crypto fixes (F-04 – F-08), drafted the first report skeleton. All fixes reviewed and run by the member. |
-| C | Codex | Reviewed Part C code, proposed patches and the regression test suite, drafted notes. The member checked the results and explains the fixes in their own words. |
-| D | Claude Code | Helped run Trivy / pip-audit / Cosign, write the Dockerfile and CI workflow, and merge the four members' sections into this report. All tool output in `report/person-d/evidence/` comes from real runs. |
+| Supawan | Claude Code | Reviewed the three injection fixes (F-01–F-03), **verified them by running** the before/after exploits in Docker, and drafted the threat model (DFD + STRIDE) and the injection finding & remediation write-ups. All tool output was run and checked by the member, who can explain each payload and fix. |
+| Phuriphat | Claude Code | Reviewed the code, implemented and tested the auth/session/crypto fixes (F-04 – F-08), drafted the first report skeleton. All fixes reviewed and run by the member. |
+| Danaiphong | Codex | Reviewed the access-control code, proposed patches and the regression test suite, drafted notes. The member checked the results and explains the fixes in their own words. |
+| Sadayu | Claude Code | Helped run Trivy / pip-audit / Cosign, write the Dockerfile and CI workflow, and merge the four members' sections into this report. All tool output in `report/person-d/evidence/` comes from real runs. |
 
 ---
 
@@ -51,7 +51,7 @@ every user's notes and password hashes (F-02, F-10).
 **After:** all 15 findings are fixed on the merged branch. Every fix has a commit, and the
 exploits were re-run and now fail (§5). On the integrated code all security gates are clean:
 Trivy **0** HIGH/CRITICAL (deps + Dockerfile + secrets), Semgrep **0** blocking findings (was 11),
-Gitleaks **0** leaks, pip-audit **0** known vulnerabilities, and Person C's 17 regression tests
+Gitleaks **0** leaks, pip-audit **0** known vulnerabilities, and Danaiphong's 17 regression tests
 pass. The CI gate fails the build on any HIGH/CRITICAL finding (§7).
 
 ---
@@ -132,7 +132,7 @@ F-02 / F-11 are worse because of F-06 (the leaked hashes are unsalted MD5).
 
 OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who found and fixed it.
 
-### Finding F-01 — SQL injection at `/login` (authentication bypass) · *owner A*
+### Finding F-01 — SQL injection at `/login` (authentication bypass) · *owner: Supawan*
 | Field | Value |
 |---|---|
 | CWE | CWE-89 |
@@ -143,7 +143,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Log in as any user, including `admin`, without a password. |
 | Evidence | `302` + `Set-Cookie: session=…` — [screenshot](report/person-a/screenshots/1-before-login.png) |
 
-### Finding F-02 — SQL injection at `/search` (credential dump via UNION) · *owner A*
+### Finding F-02 — SQL injection at `/search` (credential dump via UNION) · *owner: Supawan*
 | Field | Value |
 |---|---|
 | CWE | CWE-89 |
@@ -154,7 +154,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Every username and password hash is returned on the page. |
 | Evidence | `alice: 15da1f78…`, `admin: 0192023a…` — [screenshot](report/person-a/screenshots/2-before-search.png) |
 
-### Finding F-03 — OS command injection at `/export` (RCE as root) · *owner A*
+### Finding F-03 — OS command injection at `/export` (RCE as root) · *owner: Supawan*
 | Field | Value |
 |---|---|
 | CWE | CWE-78 |
@@ -165,7 +165,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Arbitrary command execution as `uid=0(root)` in the container. |
 | Evidence | output contains `uid=0(root) gid=0(root)` — [screenshot](report/person-a/screenshots/3-before-export.png) |
 
-### Finding F-04 — Hard-coded session-signing key · *owner B*
+### Finding F-04 — Hard-coded session-signing key · *owner: Phuriphat*
 | Field | Value |
 |---|---|
 | CWE | CWE-798 |
@@ -176,7 +176,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Anyone with the repo or image can impersonate any user, including admin; the key cannot be rotated. |
 | Evidence | Baseline `/admin` → `HTTP 200` with the forged token (verified by running). |
 
-### Finding F-05 — `alg:none` left in the JWT allowlist · *owner B*
+### Finding F-05 — `alg:none` left in the JWT allowlist · *owner: Phuriphat*
 | Field | Value |
 |---|---|
 | CWE | CWE-347 |
@@ -186,7 +186,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Sent an unsigned `{"alg":"none"}` / `{"sub":"admin"}` token → **rejected** (`HTTP 403`): PyJWT 1.7.1 raises `InvalidKeyError` because a key is supplied. |
 | Impact | Not exploitable as shipped, but becomes an auth bypass if the key is ever empty or the library changes. Removed as defence-in-depth. |
 
-### Finding F-06 — Passwords hashed with unsalted MD5 · *owner B*
+### Finding F-06 — Passwords hashed with unsalted MD5 · *owner: Phuriphat*
 | Field | Value |
 |---|---|
 | CWE | CWE-327 / CWE-916 |
@@ -196,7 +196,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Take the hashes leaked by F-02 or F-11 and crack them offline (`hashcat -m 0`); equal passwords share a hash. |
 | Impact | Mass credential disclosure on any database or response leak. |
 
-### Finding F-07 — Session cookie without security flags · *owner B*
+### Finding F-07 — Session cookie without security flags · *owner: Phuriphat*
 | Field | Value |
 |---|---|
 | CWE | CWE-614 / CWE-1004 |
@@ -206,7 +206,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | `Set-Cookie` has no `HttpOnly`, `Secure` or `SameSite`. |
 | Impact | Cookie readable by injected JS, sent over plain HTTP, no CSRF defence. |
 
-### Finding F-08 — Session tokens never expire · *owner B*
+### Finding F-08 — Session tokens never expire · *owner: Phuriphat*
 | Field | Value |
 |---|---|
 | CWE | CWE-613 |
@@ -216,7 +216,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Decode the token: no `exp` claim. |
 | Impact | A stolen token works forever. |
 
-### Finding F-09 — Self-assigned admin role and duplicate-username takeover · *owner C*
+### Finding F-09 — Self-assigned admin role and duplicate-username takeover · *owner: Danaiphong*
 | Field | Value |
 |---|---|
 | CWE | CWE-269 (more specifically CWE-266) |
@@ -227,7 +227,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Anyone can become admin without logging in. |
 | Evidence | Regression tests — [test results](report/person-c/test-results.txt) (baseline fails, fix passes). |
 
-### Finding F-10 — IDOR / BOLA on `/api/notes/<id>` · *owner C*
+### Finding F-10 — IDOR / BOLA on `/api/notes/<id>` · *owner: Danaiphong*
 | Field | Value |
 |---|---|
 | CWE | CWE-639 |
@@ -237,7 +237,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Log in as `alice`, request `/api/notes/2` → admin's note (`prod db password is hunter2`). |
 | Impact | Any user reads any note by enumerating IDs. |
 
-### Finding F-11 — `/admin` returns password hashes · *owner C*
+### Finding F-11 — `/admin` returns password hashes · *owner: Danaiphong*
 | Field | Value |
 |---|---|
 | CWE | CWE-200 |
@@ -247,7 +247,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | As admin (or via F-09), `GET /admin` → JSON includes every `password` hash. |
 | Impact | Credential material exposed for no functional reason; chains with F-06. |
 
-### Finding F-12 — Stored XSS and server-side template injection · *owner C*
+### Finding F-12 — Stored XSS and server-side template injection · *owner: Danaiphong*
 | Field | Value |
 |---|---|
 | CWE | CWE-79; CWE-1336 (SSTI) |
@@ -257,7 +257,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Save a note with body `<img src=x onerror=alert(1)>` → rendered unescaped. Save `{{7*7}}` and search for it → page shows `49`. |
 | Impact | Script in the victim's browser; template expressions evaluated on the server. |
 
-### Finding F-13 — Flask debug mode enabled · *owner C*
+### Finding F-13 — Flask debug mode enabled · *owner: Danaiphong*
 | Field | Value |
 |---|---|
 | CWE | CWE-489 |
@@ -267,7 +267,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Any unhandled exception shows the Werkzeug debugger and stack trace. |
 | Impact | Information disclosure; debugger console access if the PIN is obtained. |
 
-### Finding F-14 — Known-vulnerable dependencies · *owner D*
+### Finding F-14 — Known-vulnerable dependencies · *owner: Sadayu*
 | Field | Value |
 |---|---|
 | CWE | CWE-1395 (also CWE-1104) |
@@ -280,7 +280,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 
 ![Trivy before — dependency summary](report/person-d/evidence/ci/fig-trivy-before-1-summary-deps.png)
 
-### Finding F-15 — Insecure container build · *owner D*
+### Finding F-15 — Insecure container build · *owner: Sadayu*
 | Field | Value |
 |---|---|
 | CWE | CWE-250 (root), CWE-798 (secret baked in image), CWE-1104 (unpinned base) |
@@ -298,19 +298,19 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 Every fix is a separate commit. All of them are merged into `main`; the combined code is
 `project/starter-app/app.py`.
 
-### Fix for F-01 — parameterized login query · commit `d66e777` (A)
+### Fix for F-01 — parameterized login query · commit `d66e777` (Supawan)
 ```diff
 - q = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (username, md5(...))
 - row = con.execute(q).fetchone()
 + q = "SELECT * FROM users WHERE username = ? AND password = ?"
 + row = con.execute(q, (username, pw_hash)).fetchone()
 ```
-- **Why:** input is bound as data and never parsed as SQL. *(Later replaced by B's bcrypt lookup, F-06, which keeps the parameterized query.)*
+- **Why:** input is bound as data and never parsed as SQL. *(Later replaced by Phuriphat's bcrypt lookup, F-06, which keeps the parameterized query.)*
 - **Proof:** `username=admin'-- -` → `401 login failed`.
 
 ![after /login](report/person-a/screenshots/4-after-login.png)
 
-### Fix for F-02 — parameterized search with escaped `LIKE` · commit `d66e777` (A)
+### Fix for F-02 — parameterized search with escaped `LIKE` · commit `d66e777` (Supawan)
 ```diff
 - q = "SELECT id,title,body FROM notes WHERE owner='%s' AND body LIKE '%%%s%%'" % (user, term)
 + like = term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
@@ -322,7 +322,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 
 ![after /search](report/person-a/screenshots/5-after-search.png)
 
-### Fix for F-03 — allowlist + no shell · commit `d66e777` (A)
+### Fix for F-03 — allowlist + no shell · commit `d66e777` (Supawan)
 ```diff
 - out = subprocess.run("echo exporting notes as " + fmt, shell=True, ...)
 + if fmt not in {"txt", "csv", "json"}:
@@ -334,7 +334,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 
 ![after /export](report/person-a/screenshots/6-after-export.png)
 
-### Fix for F-04 — signing key from the environment · commit `caff106` (B)
+### Fix for F-04 — signing key from the environment · commit `caff106` (Phuriphat)
 ```diff
 - SECRET = "notevault-dev-secret"
 + SECRET = os.environ["APP_SECRET"]
@@ -346,14 +346,14 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** the key leaves the source and the image, is injected at runtime and can be rotated. The app fails closed if it is missing.
 - **Proof:** the token forged with the old key → `HTTP 403`; `docker compose up` without `APP_SECRET` aborts.
 
-### Fix for F-05 — HS256 only · commit `47b12b6` (B)
+### Fix for F-05 — HS256 only · commit `47b12b6` (Phuriphat)
 ```diff
 - data = jwt.decode(tok, SECRET, algorithms=["HS256", "none"])
 + data = jwt.decode(tok, SECRET, algorithms=["HS256"])
 ```
 - **Proof:** `alg:none` token → `HTTP 403`; `none` is no longer an accepted algorithm.
 
-### Fix for F-06 — bcrypt · commit `29a125e` (B)
+### Fix for F-06 — bcrypt · commit `29a125e` (Phuriphat)
 ```diff
 - (username, hashlib.md5(password.encode()).hexdigest(), role)
 + (username, hash_pw(password), role)          # bcrypt.hashpw(..., bcrypt.gensalt())
@@ -364,14 +364,14 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** per-hash salt and adaptive cost; `bcrypt.checkpw` compares in constant time. Adds `bcrypt==4.2.1`.
 - **Proof:** DB rows store `$2b$12$…`; correct password → `302`, wrong → `401`.
 
-### Fix for F-07 — cookie flags · commit `b576f57` (B)
+### Fix for F-07 — cookie flags · commit `b576f57` (Phuriphat)
 ```diff
 - resp.set_cookie("session", tok)
 + resp.set_cookie("session", tok, httponly=True, secure=True, samesite="Lax")
 ```
 - **Proof:** `Set-Cookie: session=…; Secure; HttpOnly; Path=/; SameSite=Lax`.
 
-### Fix for F-08 — token expiry · commit `59132fa` (B)
+### Fix for F-08 — token expiry · commit `59132fa` (Phuriphat)
 ```diff
 - tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
 + now = datetime.now(timezone.utc)
@@ -379,7 +379,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 ```
 - **Proof:** decoded payload has `exp − iat = 3600`; `jwt.decode()` rejects expired tokens.
 
-### Fix for F-09 — server-assigned role, unique usernames · commit `574af26` (C)
+### Fix for F-09 — server-assigned role, unique usernames · commit `574af26` (Danaiphong)
 ```diff
 - role = request.form.get("role") or (request.json or {}).get("role") or "user"
 + # Public registration cannot grant a privileged role.
@@ -390,21 +390,21 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** the client can no longer choose its role, and the DB rejects a second `admin`. Invalid input → `400`, duplicate → `409`.
 - **Proof:** `role=admin` registration → regular user, `/admin` → `403`; re-registering `admin` → `409`.
 
-### Fix for F-10 — owner check · commit `2c5df1b` (C)
+### Fix for F-10 — owner check · commit `2c5df1b` (Danaiphong)
 ```diff
 - r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ?", (nid,)).fetchone()
 + r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ? AND owner = ?", (nid, user)).fetchone()
 ```
 - **Proof:** alice → `/api/notes/1` `200`; `/api/notes/2` and a missing ID both → identical `404`.
 
-### Fix for F-11 — no hashes in `/admin` · commit `1e605be` (C)
+### Fix for F-11 — no hashes in `/admin` · commit `1e605be` (Danaiphong)
 ```diff
 - rows = con.execute("SELECT id,username,password,role FROM users").fetchall()
 + rows = con.execute("SELECT id,username,role FROM users").fetchall()
 ```
 - **Proof:** response objects contain only `id`, `username`, `role`.
 
-### Fix for F-12 — fixed templates with autoescape · commit `80cf57a` (C)
+### Fix for F-12 — fixed templates with autoescape · commit `80cf57a` (Danaiphong)
 ```diff
 - <h3>Your notes</h3>{{ notes_html|safe }}
 + {% for note in notes %}<li>#{{ note.id }} <b>{{ note.title }}</b>: {{ note.body }}</li>{% endfor %}
@@ -416,14 +416,14 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** user data is passed to Jinja as values, never as template source, so it is escaped and never evaluated.
 - **Proof:** `<script>`/`<img>` come back as `&lt;…&gt;`; `{{7*7}}` stays literal.
 
-### Fix for F-13 — debug off · commit `af24b72` (C)
+### Fix for F-13 — debug off · commit `af24b72` (Danaiphong)
 ```diff
 - app.run(host="0.0.0.0", port=8080, debug=True)
 + app.run(host="0.0.0.0", port=8080, debug=False, use_debugger=False, use_reloader=False)
 ```
 - **Proof:** test confirms all three are off even with `FLASK_DEBUG=1`.
 
-### Fix for F-14 — patched, fully pinned dependencies · commit `c8a2c7d` (D)
+### Fix for F-14 — patched, fully pinned dependencies · commit `c8a2c7d` (Sadayu)
 ```diff
 - Flask==2.0.1        + Flask==3.1.3
 - Werkzeug==2.0.1     + Werkzeug==3.1.9
@@ -434,12 +434,12 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
                       + MarkupSafe, itsdangerous, click, blinker pinned (transitive)
 ```
 - **Why:** every flagged package moves to a patched release; unused packages are removed, not patched.
-- **Note:** merging B's branch re-added `requests==2.25.1` / `urllib3==1.26.4`; this was caught during integration and removed again (keeping `bcrypt`).
+- **Note:** merging the auth branch re-added `requests==2.25.1` / `urllib3==1.26.4`; this was caught during integration and removed again (keeping `bcrypt`).
 - **Proof:** Trivy → **0**; pip-audit on the final integrated `requirements.txt` → *"No known vulnerabilities found"* ([integrated/pip-audit.txt](report/person-d/evidence/integrated/pip-audit.txt)).
 
 ![after — Trivy + pip-audit clean](report/person-d/evidence/ci/fig-after-trivy-pipaudit.png)
 
-### Fix for F-15 — hardened Dockerfile · commit `86655f9` (D)
+### Fix for F-15 — hardened Dockerfile · commit `86655f9` (Sadayu)
 ```diff
 - FROM python:3.12
 - ENV APP_SECRET=notevault-dev-secret
@@ -465,7 +465,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
 | pip-audit | 80 advisories | **0** | [pip-audit.txt](report/person-d/evidence/integrated/pip-audit.txt) |
 | Semgrep `p/default` + `p/owasp-top-ten` (blocking) | 11 | **0** (6 files scanned) | [semgrep.txt](report/person-d/evidence/integrated/semgrep.txt) |
 | Gitleaks | 0 | **0** | [gitleaks.txt](report/person-d/evidence/integrated/gitleaks.txt) |
-| Regression tests (Person C suite) | fail (`failures=18, errors=13`) | **17/17 pass** | [unittest.txt](report/person-d/evidence/integrated/unittest.txt) |
+| Regression tests (Danaiphong's suite) | fail (`failures=18, errors=13`) | **17/17 pass** | [unittest.txt](report/person-d/evidence/integrated/unittest.txt) |
 
 ---
 
@@ -507,7 +507,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 - **Proof the gate fails on HIGH/CRITICAL:**
   - Baseline — Trivy **fails**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839508883
-  - After D's fixes — Trivy **passes**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839516007
+  - After Sadayu's fixes — Trivy **passes**: https://github.com/ninacodin/software-security-Jikko/actions/runs/39839516007
   - After all fixes are merged, the same three gates run locally all pass (Trivy 0, Semgrep 0 of 11, Gitleaks 0 — see §5 "Integrated check").
 
   ![CI baseline — Trivy red](report/person-d/evidence/ci/fig-ci-baseline-trivy-red.png)
@@ -535,7 +535,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
 - **Existing databases.** The `UNIQUE` username constraint only applies to newly seeded databases; a real deployment needs a migration.
 
 **Lessons learned**
-- **Vulnerabilities chain across owners.** Command injection (A) became root RCE because of the container (D); SQLi (A) and the admin leak (C) mattered more because of MD5 (B). Splitting work by area was efficient, but the threat model had to be done together.
+- **Vulnerabilities chain across owners.** Command injection (Supawan) became root RCE because of the container (Sadayu); SQLi (Supawan) and the admin leak (Danaiphong) mattered more because of MD5 (Phuriphat). Splitting work by area was efficient, but the threat model had to be done together.
 - **Verify, don't assume.** The classic `alg:none` bypass did *not* work on PyJWT 1.7.1; the real forgery path was the hard-coded key. Running the exploit changed the severity.
 - **Merges can quietly undo fixes.** Integrating the auth branch re-added two vulnerable packages that D had removed. Re-running SCA and tests on the merged code — not just per branch — caught it.
 - **Scanner config can give false passes.** An ignore file made Semgrep scan zero files while showing green. A passing gate is only evidence if you know what it scanned.
@@ -548,14 +548,14 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 | Member | Workstream | Findings | Working notes & evidence |
 |---|---|---|---|
-| A — Supawan | Injection & input; DFD + threat model | F-01 – F-03 | [`report/person-a/`](report/person-a/) |
-| B — `qssomme` | Auth, session & crypto; first report draft | F-04 – F-08 | [`report/person-b/`](report/person-b/) |
-| C — Danaiphong (Bas) | Access control & output; regression tests | F-09 – F-13 | [`report/person-c/`](report/person-c/), [`tests/test_person_c.py`](tests/test_person_c.py) |
-| D — Sadayu | Supply chain, Docker, SBOM/Cosign, CI; report assembly & demo | F-14 – F-15 | [`report/person-d/`](report/person-d/) |
+| Supawan Kongsapcharoen | Injection & input; DFD + threat model | F-01 – F-03 | [`report/person-a/`](report/person-a/) |
+| Phuriphat Chantiuaong | Auth, session & crypto; first report draft | F-04 – F-08 | [`report/person-b/`](report/person-b/) |
+| Danaiphong Songsikhwa (Bas) | Access control & output; regression tests | F-09 – F-13 | [`report/person-c/`](report/person-c/), [`tests/test_person_c.py`](tests/test_person_c.py) |
+| Sadayu Suriya | Supply chain, Docker, SBOM/Cosign, CI; report assembly & demo | F-14 – F-15 | [`report/person-d/`](report/person-d/) |
 
 ### B. Finding ID cross-reference
 
-| Report ID | A | B | C | D |
+| Report ID | Supawan | Phuriphat | Danaiphong | Sadayu |
 |---|---|---|---|---|
 | F-01 / F-02 / F-03 | F-A1 / F-A2 / F-A3 | | | |
 | F-04 / F-05 / F-06 / F-07 / F-08 | | B2 / B1 / B3 / B4 / B5 | | |
