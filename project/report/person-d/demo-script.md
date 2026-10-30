@@ -61,8 +61,8 @@ docker run --rm -v "${PWD}:/src" python:3.12-slim `
 
 **SBOM + signature**
 ```powershell
-# SBOM: CycloneDX 1.7, 97 components  (project/team-jikko/sbom/sbom.json)
-cat project/team-jikko/cosign/verify-output.txt        # cosign verify: signatures verified
+# SBOM: CycloneDX 1.7, 97 components  (project/report/person-d/sbom/sbom.json)
+cat project/report/person-d/cosign/verify-output.txt        # cosign verify: signatures verified
 ```
 Say: "We generate a CycloneDX SBOM from the image, sign the image with Cosign, and
 attach a signed SBOM attestation — so a consumer can verify both *what's inside* and

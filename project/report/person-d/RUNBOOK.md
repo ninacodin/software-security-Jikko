@@ -13,7 +13,7 @@ docker compose up -d --build        # http://localhost:8080  (alice/alicepw, adm
 
 ## 1. Baseline scans ("before")
 ```powershell
-$ev = "project\team-jikko\evidence\before"
+$ev = "project\report\person-d\evidence\before"
 # Trivy: deps + Dockerfile misconfig + secrets, HIGH/CRITICAL
 docker run --rm -v "${repo}:/src" aquasec/trivy:latest fs --scanners vuln,secret,misconfig `
   --severity HIGH,CRITICAL --no-progress --quiet /src/project/starter-app > "$ev\trivy-fs.txt"
@@ -33,7 +33,7 @@ docker run --rm python:3.12-slim sh -c "pip install -q --upgrade Flask Jinja2 Py
 ```powershell
 cd project/starter-app; $env:TEAM_ID = "Jikko"; docker compose up -d --build; cd $repo
 docker compose -f project/starter-app/docker-compose.yml exec -T notevault whoami   # -> appuser
-$ev = "project\team-jikko\evidence\after"
+$ev = "project\report\person-d\evidence\after"
 docker run --rm -v "${repo}:/src" aquasec/trivy:latest fs --scanners vuln,secret,misconfig `
   --severity HIGH,CRITICAL --no-progress --quiet /src/project/starter-app > "$ev\trivy-fs.txt"
 ```
@@ -42,7 +42,7 @@ docker run --rm -v "${repo}:/src" aquasec/trivy:latest fs --scanners vuln,secret
 ```powershell
 docker run --rm -v "${repo}:/src" -v "//var/run/docker.sock:/var/run/docker.sock" `
   aquasec/trivy:latest image --quiet --format cyclonedx `
-  -o /src/project/team-jikko/sbom/sbom.json starter-app-notevault:latest
+  -o /src/project/report/person-d/sbom/sbom.json starter-app-notevault:latest
 ```
 
 ## 5. Sign with Cosign (local registry, no external account)
@@ -50,7 +50,7 @@ docker run --rm -v "${repo}:/src" -v "//var/run/docker.sock:/var/run/docker.sock
 docker run -d -p 5000:5000 --name reg registry:2
 docker tag starter-app-notevault:latest localhost:5000/notevault:1.0.0
 docker push localhost:5000/notevault:1.0.0            # note the sha256 digest
-cd project/team-jikko/cosign
+cd project/report/person-d/cosign
 $env:COSIGN_PASSWORD = "jikko-demo"                   # throwaway demo key
 cosign generate-key-pair
 $d = "<digest-from-push>"

@@ -170,9 +170,9 @@ The test results support the fixes within Part C's scope. A final assessment of 
 
 ## 6. References and Evidence
 
-- [Course report template](../REPORT-TEMPLATE.md)
+- [Course report template](../../REPORT-TEMPLATE.md)
 - [Detailed Part C remediation notes](remediation.md)
-- [Part C regression tests](../tests/test_person_c.py)
+- [Part C regression tests](../../tests/test_person_c.py)
 - [Recorded baseline and fixed-code test results](test-results.txt)
 - [MITRE CWE-266: Incorrect Privilege Assignment](https://cwe.mitre.org/data/definitions/266.html)
 - [MITRE CWE-639: Authorization Bypass Through User-Controlled Key](https://cwe.mitre.org/data/definitions/639.html)

@@ -137,7 +137,7 @@
 
 ## หลักฐานทดสอบและ commit สำหรับรายงาน
 
-ใช้ชุด [test_person_c.py](../tests/test_person_c.py) เพื่อตรวจเงื่อนไขหลังแก้ในฐานข้อมูลชั่วคราว คำสั่งจาก root ของ repo:
+ใช้ชุด [test_person_c.py](../../tests/test_person_c.py) เพื่อตรวจเงื่อนไขหลังแก้ในฐานข้อมูลชั่วคราว คำสั่งจาก root ของ repo:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 .venv/py312/bin/python -m unittest discover -s project/tests -p 'test_person_c.py' -v
