@@ -225,6 +225,25 @@ The image sequence corresponds to manual tests 1–6. These numbers describe the
 
 The admin image identifies the environment as `Bas-local-preview`; this is a local preview marker, not a verified team submission marker. The screenshots also do not show the course-required terminal stamp with student ID and timestamp. Their original contents have been retained without adding an identity or time label. Stamped evidence should be captured separately before final submission. The exact source commit cannot be established from the screenshots alone.
 
+### 3.3 Before-and-After Browser Evidence
+
+A separate controlled capture compares the original baseline with the integrated main version at commit `b1a977dc5100a423ba9953d94465cce40d4c6914`. Both databases were newly seeded with `TEAM_ID=Jikko`. Playwright captured 16 screenshots in eight pairs: team identity, role assignment, duplicate registration, note ownership, admin response fields, XSS, template evaluation, and startup configuration.
+
+[Open the complete before-and-after figures and explanations](before-after/README.md). Each pair includes the observed result and capture time. The [capture manifest](before-after/manifest.json) records source commits, actual request results and screenshot checksums. Student ID `6631503106` identifies the tester; it is separate from the team identifier.
+
+| Check | Before | After |
+|---|---|---|
+| Team identity | Seeded as Jikko | Seeded as Jikko |
+| Registration with role=admin | Admin endpoint accessible, HTTP 200 | Regular-user account, HTTP 403 |
+| Duplicate username | Accepted, HTTP 302 | Rejected, HTTP 409 |
+| Reading another owner's note | Note returned, HTTP 200 | Not found, HTTP 404 |
+| Admin user list | Password hashes included | Password fields omitted |
+| Stored HTML payload | JavaScript dialogs recorded | Literal text; no dialogs in the checked flow |
+| Stored template expression | Evaluated as 49 | Preserved as {{7*7}} |
+| Startup configuration | debug=True | Debugger and reloader explicitly disabled |
+
+The timestamps and command output were generated during capture, not added to finished images. The execution panel is a browser-rendered record, not an OS terminal. A full desktop capture with a real terminal is still needed to meet the course's exact evidence format. The debug pair records the source entry point with Flask.run mocked; both capture servers themselves used debug=False. The after version includes other team members' fixes and should not be presented as an isolated test of Part C alone.
+
 ## 4. Limitations and Integration
 
 The unique username constraint was added to the schema in `seed()`, so it applies to newly created databases. An existing database needs a migration and a check for duplicate accounts. Updating the source code alone does not change its schema.
