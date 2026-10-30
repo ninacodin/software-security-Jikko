@@ -1,0 +1,23 @@
+# Integrated-code check (all of A+B+C+D merged) -- 2026-10-30T15:13:01 -- commit base 8ef2f4a + requirements fix
+# Python Python 3.12.10
+$ APP_SECRET=<random> python -m unittest discover -s project/tests -p test_person_c.py -v
+test_admin_note_access_still_requires_ownership (test_person_c.PersonCSecurityTests.test_admin_note_access_still_requires_ownership) ... ok
+test_admin_response_excludes_password_hashes (test_person_c.PersonCSecurityTests.test_admin_response_excludes_password_hashes) ... ok
+test_admin_still_rejects_anonymous_and_regular_users (test_person_c.PersonCSecurityTests.test_admin_still_rejects_anonymous_and_regular_users) ... ok
+test_database_rejects_duplicate_username (test_person_c.PersonCSecurityTests.test_database_rejects_duplicate_username) ... ok
+test_direct_startup_disables_debug_without_starting_a_server (test_person_c.PersonCSecurityTests.test_direct_startup_disables_debug_without_starting_a_server) ... ok
+test_duplicate_seeded_names_cannot_take_over_existing_accounts (test_person_c.PersonCSecurityTests.test_duplicate_seeded_names_cannot_take_over_existing_accounts) ... ok
+test_export_escapes_subprocess_output_without_running_a_command (test_person_c.PersonCSecurityTests.test_export_escapes_subprocess_output_without_running_a_command) ... ok
+test_form_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_form_registration_cannot_assign_admin_role) ... ok
+test_invalid_registration_fields_return_400 (test_person_c.PersonCSecurityTests.test_invalid_registration_fields_return_400) ... ok
+test_json_registration_cannot_assign_admin_role (test_person_c.PersonCSecurityTests.test_json_registration_cannot_assign_admin_role) ... ok
+test_malformed_or_non_json_registration_returns_400 (test_person_c.PersonCSecurityTests.test_malformed_or_non_json_registration_returns_400) ... ok
+test_normal_notes_render_without_leaking_another_users_notes (test_person_c.PersonCSecurityTests.test_normal_notes_render_without_leaking_another_users_notes) ... ok
+test_normal_registration_and_login_still_work (test_person_c.PersonCSecurityTests.test_normal_registration_and_login_still_work) ... ok
+test_note_api_requires_authentication (test_person_c.PersonCSecurityTests.test_note_api_requires_authentication) ... ok
+test_note_owner_can_read_own_note (test_person_c.PersonCSecurityTests.test_note_owner_can_read_own_note) ... ok
+test_other_owner_and_missing_note_are_indistinguishable (test_person_c.PersonCSecurityTests.test_other_owner_and_missing_note_are_indistinguishable) ... ok
+test_stored_html_is_escaped_on_home_and_search (test_person_c.PersonCSecurityTests.test_stored_html_is_escaped_on_home_and_search) ... ok
+----------------------------------------------------------------------
+Ran 17 tests in 13.080s
+OK

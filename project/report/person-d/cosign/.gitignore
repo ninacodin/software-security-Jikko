@@ -1,0 +1,3 @@
+# Never commit the signing private key. Only the public key + verify outputs
+# belong in the repo (so graders can re-verify; the key stays with the team).
+cosign.key

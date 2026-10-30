@@ -1,0 +1,4 @@
+# Integrated-code check (all of A+B+C+D merged) -- 2026-10-30T15:13:01 -- commit base 8ef2f4a + requirements fix
+# Python Python 3.12.10
+$ pip-audit -r project/starter-app/requirements.txt
+No known vulnerabilities found

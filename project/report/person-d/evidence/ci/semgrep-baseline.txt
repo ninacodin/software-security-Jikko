@@ -1,0 +1,152 @@
+﻿               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 6 files tracked by git with 334 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>      45       6          Community     334                                                                
+  python           96       1                                                                                           
+  yaml              9       1                                                                                           
+  dockerfile        4       1                                                                                           
+                                                                                                                        
+                    
+                    
+┌──────────────────┐
+│ 11 Code Findings │
+└──────────────────┘
+          
+    app.py
+   ❯❯❱ python.jwt.security.jwt-none-alg.jwt-python-none-alg
+          ❰❰ Blocking ❱❱
+          Detected use of the 'none' algorithm in a JWT token. The 'none' algorithm assumes the integrity of
+          the token has already been verified. This would allow a malicious actor to forge a JWT token that 
+          will automatically be verified. Do not explicitly use the 'none' algorithm. Instead, use an       
+          algorithm such as 'HS256'.                                                                        
+          Details: https://sg.run/Yvp4                                                                      
+                                                                                                            
+           83┆ data = jwt.decode(tok, SECRET, algorithms=["HS256", "none"])
+   
+   ❯❯❱ python.django.security.injection.tainted-sql-string.tainted-sql-string
+          ❰❰ Blocking ❱❱
+          Detected user input used to manually construct a SQL string. This is usually bad practice because 
+          manual construction could accidentally result in a SQL injection. An attacker could use a SQL     
+          injection to steal or modify contents of the database. Instead, use a parameterized query which is
+          available by default in most database engines. Alternatively, consider using the Django object-   
+          relational mappers (ORM) instead of raw SQL queries.                                              
+          Details: https://sg.run/PbZp                                                                      
+                                                                                                            
+          128┆ q = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (
+          129┆     username, hashlib.md5((password or "").encode()).hexdigest())
+   
+   ❯❯❱ python.flask.security.injection.tainted-sql-string.tainted-sql-string
+          ❰❰ Blocking ❱❱
+          Detected user input used to manually construct a SQL string. This is usually bad practice because 
+          manual construction could accidentally result in a SQL injection. An attacker could use a SQL     
+          injection to steal or modify contents of the database. Instead, use a parameterized query which is
+          available by default in most database engines. Alternatively, consider using an object-relational 
+          mapper (ORM) such as SQLAlchemy which will protect your queries.                                  
+          Details: https://sg.run/JxZj                                                                      
+                                                                                                            
+          128┆ q = "SELECT * FROM users WHERE username = '%s' AND password = '%s'" % (
+          129┆     username, hashlib.md5((password or "").encode()).hexdigest())
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          ❰❰ Blocking ❱❱
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+          130┆ row = con.execute(q).fetchone()
+   
+   ❯❯❱ python.jwt.security.jwt-hardcode.jwt-python-hardcoded-secret
+          ❰❰ Blocking ❱❱
+          Hardcoded JWT secret or private key is used. This is a Insufficiently Protected Credentials     
+          weakness: https://cwe.mitre.org/data/definitions/522.html Consider using an appropriate security
+          mechanism to protect the credentials (e.g. keeping secrets in environment variables)            
+          Details: https://sg.run/l2E9                                                                    
+                                                                                                          
+          134┆ tok = jwt.encode({"sub": username}, SECRET, algorithm="HS256")
+   
+   ❯❯❱ python.django.security.injection.tainted-sql-string.tainted-sql-string
+          ❰❰ Blocking ❱❱
+          Detected user input used to manually construct a SQL string. This is usually bad practice because 
+          manual construction could accidentally result in a SQL injection. An attacker could use a SQL     
+          injection to steal or modify contents of the database. Instead, use a parameterized query which is
+          available by default in most database engines. Alternatively, consider using the Django object-   
+          relational mappers (ORM) instead of raw SQL queries.                                              
+          Details: https://sg.run/PbZp                                                                      
+                                                                                                            
+          178┆ q = "SELECT id,title,body FROM notes WHERE owner='%s' AND body LIKE '%%%s%%'" % (user,
+               term)                                                                                 
+   
+   ❯❯❱ python.flask.security.injection.tainted-sql-string.tainted-sql-string
+          ❰❰ Blocking ❱❱
+          Detected user input used to manually construct a SQL string. This is usually bad practice because 
+          manual construction could accidentally result in a SQL injection. An attacker could use a SQL     
+          injection to steal or modify contents of the database. Instead, use a parameterized query which is
+          available by default in most database engines. Alternatively, consider using an object-relational 
+          mapper (ORM) such as SQLAlchemy which will protect your queries.                                  
+          Details: https://sg.run/JxZj                                                                      
+                                                                                                            
+          178┆ q = "SELECT id,title,body FROM notes WHERE owner='%s' AND body LIKE '%%%s%%'" % (user,
+               term)                                                                                 
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          ❰❰ Blocking ❱❱
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+          179┆ rows = con.execute(q).fetchall()
+   
+   ❯❯❱ python.flask.security.injection.subprocess-injection.subprocess-injection
+          ❰❰ Blocking ❱❱
+          Detected user input entering a `subprocess` call unsafely. This could result in a command injection 
+          vulnerability. An attacker could use this vulnerability to execute arbitrary commands on the host,  
+          which allows them to download malware, scan sensitive data, or run any command they wish on the     
+          server. Do not let users choose the command to run. In general, prefer to use Python API versions of
+          system commands. If you must use subprocess, use a dictionary to allowlist a set of commands.       
+          Details: https://sg.run/5gW3                                                                        
+                                                                                                              
+          202┆ out = subprocess.run("echo exporting notes as " + fmt, shell=True,
+          203┆                      capture_output=True, text=True)
+   
+   ❯❯❱ python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use
+          ❰❰ Blocking ❱❱
+          Detected subprocess function 'run' with user controlled data. A malicious actor could leverage this
+          to perform command injection. You may consider using 'shlex.escape()'.                             
+          Details: https://sg.run/NWxp                                                                       
+                                                                                                             
+          202┆ out = subprocess.run("echo exporting notes as " + fmt, shell=True,
+   
+   ❯❯❱ python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
+          ❰❰ Blocking ❱❱
+          Found 'subprocess' function 'run' with 'shell=True'. This is dangerous because this call will spawn
+          the command using a shell process. Doing so propagates current shell settings and variables, which 
+          makes it much easier for a malicious actor to execute commands. Use 'shell=False' instead.         
+          Details: https://sg.run/J92w                                                                       
+                                                                                                             
+           ▶▶┆ Autofix ▶ False
+          202┆ out = subprocess.run("echo exporting notes as " + fmt, shell=True,
+
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 11 (11 blocking)
+ • Rules run: 153
+ • Targets scanned: 6
+ • Parsed lines: ~100.0%
+ • No ignore information available
+Ran 153 rules on 6 files: 11 findings.
