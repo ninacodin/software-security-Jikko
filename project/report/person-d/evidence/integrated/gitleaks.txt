@@ -1,0 +1,5 @@
+# Integrated code (A+B+C+D merged), commit 43f65f2 -- 2026-10-30T15:28:20
+$ gitleaks dir project/starter-app --exit-code 1
+8:28AM INF scanned ~14966 bytes (14.97 KB) in 15.9ms
+8:28AM INF no leaks found
+exit code: 0
