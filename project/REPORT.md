@@ -3,7 +3,7 @@
 > Team report for **NoteVault** (`project/starter-app/`), following `REPORT-TEMPLATE.md`.
 > Each member's raw working notes and evidence live under [`report/`](report/) (see Appendix A).
 >
-> `<!-- TODO -->` marks the few items only the team can fill in (student IDs, video link).
+> `<!-- TODO -->` marks the one item the team still has to fill in: the demo video link.
 
 ## Cover
 
