@@ -1,4 +1,4 @@
-# Demo script — Person D (Supply-Chain & Build/CI)
+# Demo script — Sadayu (Supply-Chain & Build/CI)
 
 ~3–4 minutes of the team's Week-19 video. Structure each part as **attack → root
 cause → fix**. Commands are copy-paste ready (run from repo root; `$env:TEAM_ID="Jikko"`).

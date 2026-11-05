@@ -1,9 +1,9 @@
 # NoteVault Security Review
-## Part C: Access Control and Output Handling
+## Danaiphong's part: Access Control and Output Handling
 
 | Item | Details |
 |---|---|
-| Contributor | Bas — Part C |
+| Contributor | Danaiphong Songsikhwa (Bas) |
 | Report date | 23 October 2026 |
 | Browser evidence added | 30 October 2026 |
 | Repository | [ninacodin/software-security-Jikko](https://github.com/ninacodin/software-security-Jikko) |
@@ -12,7 +12,7 @@
 | Baseline commit | `0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c` |
 | Reviewed commit after fixes | `1662fc98cbc33c49c4252719bd5b9ef0c8350346` |
 
-This report covers the findings, fixes, and test results for Part C of the NoteVault project. It provides material for the Vulnerability Findings and Remediation sections of the team report. The code review and automated results describe the Part C changes. The browser evidence captured on 30 October 2026 uses Playwright against isolated before-and-after snapshots seeded with TEAM_ID=Jikko. It is identified separately from the earlier automated test run.
+This report covers the findings, fixes, and test results for the access-control & output part of the NoteVault project. It provides material for the Vulnerability Findings and Remediation sections of the team report. The code review and automated results describe these changes. The browser evidence captured on 30 October 2026 uses Playwright against isolated before-and-after snapshots seeded with TEAM_ID=Jikko. It is identified separately from the earlier automated test run.
 
 ## 1. Objective and Scope
 
@@ -274,13 +274,13 @@ A separate controlled capture compares the original baseline with the integrated
 | Stored template expression | Evaluated as 49 | Preserved as {{7*7}} |
 | Startup configuration | debug=True | Debugger and reloader explicitly disabled |
 
-The timestamps and command output were generated during capture, not added to finished images. The execution panel is a browser-rendered record, not an OS terminal. A full desktop capture with a real terminal is still needed to meet the course's exact evidence format. The debug pair records the source entry point with Flask.run mocked; both capture servers themselves used debug=False. The after version includes other team members' fixes and should not be presented as an isolated test of Part C alone.
+The timestamps and command output were generated during capture, not added to finished images. The execution panel is a browser-rendered record, not an OS terminal. A full desktop capture with a real terminal is still needed to meet the course's exact evidence format. The debug pair records the source entry point with Flask.run mocked; both capture servers themselves used debug=False. The after version includes other team members' fixes and should not be presented as an isolated test of this part alone.
 
 ## 4. Limitations and Integration
 
 The unique username constraint was added to the schema in `seed()`, so it applies to newly created databases. An existing database needs a migration and a check for duplicate accounts. Updating the source code alone does not change its schema.
 
-When merging Part A, the team must retain both the SQL fixes and the updated rendering in `search()`. The command execution fix and output escaping in `export()` must also be kept together. When merging Part B, the updated password hashing must preserve server-side role assignment and unique usernames.
+When merging Supawan's injection fixes, the team must retain both the SQL fixes and the updated rendering in `search()`. The command execution fix and output escaping in `export()` must also be kept together. When merging Phuriphat's auth fixes, the updated password hashing must preserve server-side role assignment and unique usernames.
 
 The recorded unit tests do not provide evidence of a Docker build. The browser figures document only the manual cases shown and do not replace a complete browser test. Final submission evidence still requires the tester's identity and timestamp as specified by the course. Application tests and build checks should be repeated after all branches are merged.
 
@@ -290,13 +290,13 @@ The changes address three related issues: who can receive a privilege, who can a
 
 The duplicate username issue shows why changing a single role field was not enough. Since several parts of the application identify users by username, that value must distinguish one account from another. The database constraint supports the access checks made by the application.
 
-The test results support the fixes within Part C's scope. A final assessment of NoteVault still depends on the combined code, especially the SQL injection, command execution, and session handling changes that affect the trustworthiness of a requester's identity.
+The test results support the fixes within this part's scope. A final assessment of NoteVault still depends on the combined code, especially the SQL injection, command execution, and session handling changes that affect the trustworthiness of a requester's identity.
 
 ## 6. References and Evidence
 
 - [Course report template](../../REPORT-TEMPLATE.md)
-- [Detailed Part C remediation notes](remediation.md)
-- [Part C regression tests](../../tests/test_person_c.py)
+- [Detailed remediation notes](remediation.md)
+- [Access-control regression tests](../../tests/test_person_c.py)
 - [Recorded baseline and fixed-code test results](test-results.txt)
 - [MITRE CWE-266: Incorrect Privilege Assignment](https://cwe.mitre.org/data/definitions/266.html)
 - [MITRE CWE-639: Authorization Bypass Through User-Controlled Key](https://cwe.mitre.org/data/definitions/639.html)

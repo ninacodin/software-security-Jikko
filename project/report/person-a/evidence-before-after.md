@@ -1,4 +1,4 @@
-# Person A — Before/After Exploit Evidence (Injection & Input)
+# Supawan — Before/After Exploit Evidence (Injection & Input)
 
 Target: NoteVault `project/starter-app`, `TEAM_ID=Jikko`. Owner: **Supawan, 6631503042**.
 BEFORE = commit `039029f` (vulnerable) · AFTER = commit `d66e777` (fix, branch `fix/injection-input-6631503042`).

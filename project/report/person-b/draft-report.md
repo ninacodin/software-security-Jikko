@@ -1,7 +1,7 @@
 # Term Project Report — Secure Build
 
 > Team report assembled per `REPORT-TEMPLATE.md`. Total **100 pts**.
-> **Assembly owner:** คน B — keeps §1 (Executive Summary) and §4 (Findings) in sync.
+> **Assembly owner:** Phuriphat — keeps §1 (Executive Summary) and §4 (Findings) in sync.
 >
 > **Status key:** ✅ done & verified-by-run · ✍️ drafted from code review, **owner must verify/remediate** · `<!-- TODO -->` not started.
 > Findings B1–B5 (auth/session/crypto) are fixed and tested. Everything marked ✍️ was
@@ -323,7 +323,7 @@ flowchart LR
 - Residual risks (e.g. no CSRF tokens yet; rate limiting) and what you'd harden next; lessons learned.
 
 ## Appendix
-- **Task split:** คน B — auth/session/crypto (B1–B5, implemented & verified) + report assembly (§1, §2–§4 scaffold). Other findings owned per the table above.
+- **Task split:** Phuriphat — auth/session/crypto (B1–B5, implemented & verified) + report assembly (§1, §2–§4 scaffold). Other findings owned per the table above.
 - References: CWE (cwe.mitre.org), OWASP Top 10:2025.
 
 ---

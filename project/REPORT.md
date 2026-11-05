@@ -32,8 +32,8 @@ NoteVault is a small Flask web app and JSON API. Users register, log in (JWT in 
 and search their own notes, and export them; an admin can list all users. It worked end-to-end
 but had never been security-reviewed.
 
-The team split the review into four workstreams — **A** injection & input, **B** authentication,
-session & crypto, **C** access control & output, **D** supply chain & build/CI — and found
+The team split the review into four workstreams — injection & input (Supawan), authentication,
+session & crypto (Phuriphat), access control & output (Danaiphong), supply chain & build/CI (Sadayu) — and found
 **15 vulnerabilities**:
 
 | Severity | Count | Findings |

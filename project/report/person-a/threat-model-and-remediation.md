@@ -3,14 +3,14 @@
      Branch: fix/injection-input-6631503042 · Fix commit: d66e777
      USAGE:
        • §2 + §3 below  -> you OWN these; commit into the team report (central deliverable).
-       • §4 + §5 blocks -> hand to Person B, who assembles the full §4/§5.
+       • §4 + §5 blocks -> hand to Phuriphat, who assembles the full §4/§5.
        • DFD image: notevault-dfd.svg  (insert at the §2 "insert image" slot)
-       • Evidence log: personA-evidence-beforeafter.md (source your stamped screenshots from it)
+       • Evidence log: evidence-before-after.md (source your stamped screenshots from it)
      TODO before submit: (1) stamped screenshots  (2) confirm OWASP Top 10:2025 numbering
                          (3) reword in your own voice (MOSS/JPlag + viva)
      ============================================================================ -->
 
-# NoteVault — Secure Build · Person A sections (Injection & Input)
+# NoteVault — Secure Build · Supawan's sections (Injection & Input)
 
 ---
 
@@ -36,48 +36,48 @@ command.
 - **TB1 — Internet ↔ App (network perimeter).** Every HTTP request crosses it; all input untrusted.
 - **TB2 — App ↔ SQLite (query boundary).** Where untrusted input becomes SQL → SQL-injection surface (`/login`, `/search`).
 - **TB3 — App ↔ OS shell (exec boundary).** Where untrusted input becomes a command → command-injection surface (`/export`).
-- **TB4 — Client ↔ Server session trust.** Server trusts a JWT it signed; weak signing lets a client forge identity (Person B scope).
+- **TB4 — Client ↔ Server session trust.** Server trusts a JWT it signed; weak signing lets a client forge identity (Phuriphat's scope).
 
 ---
 
 ## 3. Threat Model — STRIDE  *(20 pts)*
 
 STRIDE applied to each DFD element / flow. ✔ = a realistic threat exists in the current code.
-Owner **A** = Injection & Input (my scope); others noted for completeness (whole-app model).
+Owner **Supawan** = Injection & Input (my scope); others noted for completeness (whole-app model).
 
 | Element / data flow | S | T | R | I | D | E | Top threat & mitigation |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|---|
 | **TB1** HTTP request → P1 (all input) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | Untrusted input is the root of every finding. Validate/encode at the boundary; authn+authz per route. |
-| **F1/TB2** login creds → SQL *(A)* | ✔ | ✔ | | | | ✔ | **CWE-89 SQLi auth bypass** (`admin'-- -`). *Fix: parameterized query.* ✅ |
-| **F4/TB2** search `q` → SQL *(A)* | | ✔ | | ✔ | | | **CWE-89 SQLi** `UNION SELECT` dumps all password hashes. *Fix: parameterized + `LIKE`/`ESCAPE`.* ✅ |
-| **F5/TB3** export `fmt` → shell *(A)* | | ✔ | | ✔ | ✔ | ✔ | **CWE-78 command injection** (`fmt=txt;id` → RCE as root). *Fix: allowlist + `shell=False`.* ✅ |
-| **F2/TB4** session JWT (verify) | ✔ | ✔ | ✔ | | | ✔ | **CWE-347** accepts `none` alg → forge admin. **CWE-798** hardcoded secret. *(Person B)* |
-| **P1** `/register` role field | | | | | | ✔ | **CWE-269** client sets `role=admin` → privilege escalation. *(Person C)* |
-| **F6** `/api/notes/<id>` | | | | ✔ | | ✔ | **CWE-639 IDOR** — any note by id, no owner check. *(Person C)* |
-| **F6** `/admin` response | | | | ✔ | | | **CWE-200** returns raw username+password-hash list. *(Person C)* |
-| **D1** stored password hashes | | | | ✔ | | | **CWE-327/916** unsalted MD5. *(Person B)* |
-| **F3** note `body` rendered | | ✔ | | ✔ | | | **CWE-79 stored XSS** via `|safe` / `render_template_string`. *(Person C)* |
-| **P1** Flask `debug=True` | | ✔ | | ✔ | | ✔ | **CWE-489** Werkzeug debugger → RCE/info leak. *(Person C)* |
-| **P1/host** container runs as **root** | | ✔ | | | | ✔ | **CWE-250** no `USER` → process compromise = root. *(Person D)* |
-| **F2** session cookie flags | ✔ | | ✔ | ✔ | | | **CWE-614/1004/352** no `HttpOnly`/`Secure`/CSRF. *(Person B)* |
+| **F1/TB2** login creds → SQL *(Supawan)* | ✔ | ✔ | | | | ✔ | **CWE-89 SQLi auth bypass** (`admin'-- -`). *Fix: parameterized query.* ✅ |
+| **F4/TB2** search `q` → SQL *(Supawan)* | | ✔ | | ✔ | | | **CWE-89 SQLi** `UNION SELECT` dumps all password hashes. *Fix: parameterized + `LIKE`/`ESCAPE`.* ✅ |
+| **F5/TB3** export `fmt` → shell *(Supawan)* | | ✔ | | ✔ | ✔ | ✔ | **CWE-78 command injection** (`fmt=txt;id` → RCE as root). *Fix: allowlist + `shell=False`.* ✅ |
+| **F2/TB4** session JWT (verify) | ✔ | ✔ | ✔ | | | ✔ | **CWE-347** accepts `none` alg → forge admin. **CWE-798** hardcoded secret. *(Phuriphat)* |
+| **P1** `/register` role field | | | | | | ✔ | **CWE-269** client sets `role=admin` → privilege escalation. *(Danaiphong)* |
+| **F6** `/api/notes/<id>` | | | | ✔ | | ✔ | **CWE-639 IDOR** — any note by id, no owner check. *(Danaiphong)* |
+| **F6** `/admin` response | | | | ✔ | | | **CWE-200** returns raw username+password-hash list. *(Danaiphong)* |
+| **D1** stored password hashes | | | | ✔ | | | **CWE-327/916** unsalted MD5. *(Phuriphat)* |
+| **F3** note `body` rendered | | ✔ | | ✔ | | | **CWE-79 stored XSS** via `|safe` / `render_template_string`. *(Danaiphong)* |
+| **P1** Flask `debug=True` | | ✔ | | ✔ | | ✔ | **CWE-489** Werkzeug debugger → RCE/info leak. *(Danaiphong)* |
+| **P1/host** container runs as **root** | | ✔ | | | | ✔ | **CWE-250** no `USER` → process compromise = root. *(Sadayu)* |
+| **F2** session cookie flags | ✔ | | ✔ | ✔ | | | **CWE-614/1004/352** no `HttpOnly`/`Secure`/CSRF. *(Phuriphat)* |
 
 ### Top 5 risks (likelihood × impact)
 
 | # | Risk | CWE | Likelihood | Impact | Rating | Owner |
 |---|---|---|---|---|---|---|
-| 1 | Command injection at `/export` → RCE as **root** in container | CWE-78 | High | Critical | **Critical** | A ✅ |
-| 2 | JWT `none` alg / hardcoded secret → forge admin session | CWE-347/798 | High | Critical | **Critical** | B |
-| 3 | SQLi at `/login` → authentication bypass | CWE-89 | High | High | **High** | A ✅ |
-| 4 | SQLi at `/search` (`UNION`) → dump all credential hashes | CWE-89 | High | High | **High** | A ✅ |
-| 5 | `/register` role injection → privilege escalation | CWE-269 | High | High | **High** | C |
+| 1 | Command injection at `/export` → RCE as **root** in container | CWE-78 | High | Critical | **Critical** | Supawan ✅ |
+| 2 | JWT `none` alg / hardcoded secret → forge admin session | CWE-347/798 | High | Critical | **Critical** | Phuriphat |
+| 3 | SQLi at `/login` → authentication bypass | CWE-89 | High | High | **High** | Supawan ✅ |
+| 4 | SQLi at `/search` (`UNION`) → dump all credential hashes | CWE-89 | High | High | **High** | Supawan ✅ |
+| 5 | `/register` role injection → privilege escalation | CWE-269 | High | High | **High** | Danaiphong |
 
 *Risks 1, 3, 4 (injection scope) remediated on `fix/injection-input-6631503042`; see §4–§5. Risk 1 is
-aggravated by #2-adjacent root container (Person D) — a cross-zone chain worth noting in the demo.*
+aggravated by #2-adjacent root container (Sadayu) — a cross-zone chain worth noting in the demo.*
 
 ---
 <!-- ===== HAND THE TWO SECTIONS BELOW TO PERSON B FOR §4/§5 ASSEMBLY ===== -->
 
-## 4. Vulnerability Findings — Injection & Input (Person A)
+## 4. Vulnerability Findings — Injection & Input (Supawan)
 
 ### Finding F-A1 — SQL Injection at `/login` (authentication bypass)
 | Field | Value |
@@ -111,13 +111,13 @@ aggravated by #2-adjacent root container (Person D) — a cross-zone chain worth
 | Severity | **Critical** |
 | Location | `project/starter-app/app.py:202` (`/export`) |
 | Root cause | `subprocess.run("echo exporting notes as " + fmt, shell=True)` — `fmt` is concatenated into a `/bin/sh` command; metacharacters (`;`, `|`, `` ` ``, `$()`) are interpreted. |
-| Reproduction | authenticated `GET /export?fmt=txt;id` → shell runs `echo … ; id` → `uid=0(root)`. Aggravated by root container (Person D). |
+| Reproduction | authenticated `GET /export?fmt=txt;id` → shell runs `echo … ; id` → `uid=0(root)`. Aggravated by root container (Sadayu). |
 | Impact | Arbitrary command execution as root inside the container — full host-process compromise. |
 | Evidence | before: output contains `uid=0(root)`; after: `400 invalid format`. Screenshots: `screenshots/3-before-export.png`, `screenshots/6-after-export.png`. |
 
 ---
 
-## 5. Remediation — Injection & Input (Person A)
+## 5. Remediation — Injection & Input (Supawan)
 
 All three fixed on branch `fix/injection-input-6631503042`, commit **`d66e777`**.
 
@@ -130,7 +130,7 @@ All three fixed on branch `fix/injection-input-6631503042`, commit **`d66e777`**
 +    pw_hash = hashlib.md5((password or "").encode()).hexdigest()
 +    row = con.execute(q, (username, pw_hash)).fetchone()
 ```
-- **Why:** values are bound as data, never parsed as SQL. `admin'-- -` becomes a literal username that matches no row → `401`. (MD5 left intentionally — Person B's crypto finding.)
+- **Why:** values are bound as data, never parsed as SQL. `admin'-- -` becomes a literal username that matches no row → `401`. (MD5 left intentionally — Phuriphat's crypto finding.)
 - **Proof exploit fails:** `username=admin'-- -` → `401 login failed` *(verified by running, 2026-10-22)* — see `screenshots/4-after-login.png`.
 
 ### Fix for F-A2 — parameterized search + LIKE escaping
