@@ -16,7 +16,7 @@
 
 ---
 
-## PART A — Injection & Input (Supawan, 6631503042) — ~2:00
+## PART A — Injection & Input (Supawan, 6631503042) — ~2:30
 
 > Use your 6 stamped screenshots, or run live. Keep the identity stamp visible.
 
@@ -49,21 +49,21 @@
 - **FIX — show:** allowlist `{txt,csv,json}` + `shell=False` argv list → `?fmt=txt;id` → **400 invalid format**;
   `?fmt=csv` still works (`screenshots/6-after-export.png`).
 - **Say:** "สองชั้น: allowlist ปฏิเสธค่านอกรายการ + ไม่ผ่าน shell เลย → metacharacter ไม่ถูกตีความ."
-- **Transition:** "ข้อสังเกต — RCE ได้ root เพราะต่อกับช่องโหว่ container ของคน D. ส่งต่อให้คน B เรื่อง session."
+- **Transition:** "ข้อสังเกต — RCE ได้ root เพราะต่อกับช่องโหว่ container ของ Sadayu. ส่งต่อให้ Phuriphat เรื่อง session."
 
 ---
 
-## PART B — Auth / Session / Crypto (Person B) — ~2:00  *(B fills in)*
+## PART B — Auth / Session / Crypto (Phuriphat) — ~2:00  *(Phuriphat fills in)*
 - JWT accepts `none` alg → forge admin token (CWE-347) · hardcoded secret (CWE-798) ·
   MD5 unsalted (CWE-327/916) · cookie missing HttpOnly/Secure (CWE-614).
 - **attack → root cause (`app.py:83` etc.) → fix** (drop `none`, secret from env, bcrypt/argon2, cookie flags).
 
-## PART C — Access Control & Output (Person C) — ~2:00  *(C fills in)*
+## PART C — Access Control & Output (Danaiphong) — ~2:00  *(Danaiphong fills in)*
 - `/register` role injection → become admin (CWE-269) · IDOR `/api/notes/<id>` (CWE-639) ·
   `/admin` leaks hashes (CWE-200) · stored XSS via `|safe` (CWE-79) · `debug=True` (CWE-489).
 - **attack → root cause → fix** (server-set role, ownership check, drop password column, autoescape, debug off).
 
-## PART D — Supply Chain & Build/CI (Person D) — ~2:00  *(D fills in)*
+## PART D — Supply Chain & Build/CI (Sadayu) — ~2:00  *(Sadayu fills in)*
 - **Dependencies:** show old pins in `requirements.txt` → Trivy/pip-audit CVEs (CWE-1395).
 - **Dockerfile:** runs as root, no digest pin, baked secret (CWE-250/798) → show hardened Dockerfile (non-root `USER`).
 - **SBOM:** generate CycloneDX → show component count.
