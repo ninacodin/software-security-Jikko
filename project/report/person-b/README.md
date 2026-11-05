@@ -1,4 +1,4 @@
-# Person B — Authentication, Session & Crypto
+# Phuriphat Chantiuaong — Authentication, Session & Crypto
 
 Findings **F-04 – F-08** in the team report (internal IDs B1–B5).
 

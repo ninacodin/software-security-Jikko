@@ -5,13 +5,14 @@
 |---|---|
 | Contributor | Bas — Part C |
 | Report date | 23 October 2026 |
+| Browser evidence added | 30 October 2026 |
 | Repository | [ninacodin/software-security-Jikko](https://github.com/ninacodin/software-security-Jikko) |
 | Branch | `Bas/access-control-output` |
 | Modified file | `project/starter-app/app.py` |
 | Baseline commit | `0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c` |
 | Reviewed commit after fixes | `1662fc98cbc33c49c4252719bd5b9ef0c8350346` |
 
-This report covers the findings, fixes, and test results for Part C of the NoteVault project. It provides material for the Vulnerability Findings and Remediation sections of the team report. The results apply to this branch before integration with the other members' work.
+This report covers the findings, fixes, and test results for Part C of the NoteVault project. It provides material for the Vulnerability Findings and Remediation sections of the team report. The code review and automated results describe the Part C changes. The browser evidence captured on 30 October 2026 uses Playwright against isolated before-and-after snapshots seeded with TEAM_ID=Jikko. It is identified separately from the earlier automated test run.
 
 ## 1. Objective and Scope
 
@@ -42,6 +43,34 @@ The updated function assigns the `user` role on the server and ignores any role 
 
 **Test result:** Registration requests containing `role=admin`, sent as either form data or JSON, created regular users. These users received HTTP 403 when requesting `/admin`. Duplicate registrations using `alice` or `admin` were rejected. Registration and login with a new username still worked.
 
+#### Playwright before-and-after evidence
+
+**Role assignment — before**
+
+![Role assignment before](before-after/registration-before.png)
+
+The request supplied `role=admin` when creating `c-evidence`. The new account could open `/admin` with HTTP 200, showing that the server accepted a privileged role chosen by the client.
+
+**Role assignment — after**
+
+![Role assignment after](before-after/registration-after.png)
+
+The same registration request created a regular-user account. Its request to `/admin` returned HTTP 403. The right-hand panel records the submitted role and actual response status.
+
+**Duplicate registration — before**
+
+![Duplicate registration before](before-after/duplicate-before.png)
+
+Registering the existing username `alice` returned HTTP 302, so the duplicate registration was accepted. The POST result is recorded in the panel; the home page on the left is context rather than the POST response.
+
+**Duplicate registration — after**
+
+![Duplicate registration after](before-after/duplicate-after.png)
+
+The same duplicate username returned HTTP 409 with `username already exists`. This prevents a second account from using an existing identity.
+
+The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
+
 **Fix commit:** [`574af26`](https://github.com/ninacodin/software-security-Jikko/commit/574af26)
 
 ### 2.2 F-C02 — Note Access Did Not Check Ownership
@@ -60,6 +89,22 @@ The query now checks both the note ID and the owner. The owner value comes from 
 
 **Test result:** Owners could read their own notes with HTTP 200. Requests without a valid session returned HTTP 401. Requests for another user's note and requests for a nonexistent ID both returned HTTP 404 with the same response body. This endpoint follows an owner-only policy, including for administrator accounts.
 
+#### Playwright before-and-after evidence
+
+**Note ownership — before**
+
+![Note ownership before](before-after/ownership-before.png)
+
+While logged in as `alice`, requesting `/api/notes/2` returned HTTP 200 and disclosed the administrator's note. The panel also records successful access to alice's own note as a control case.
+
+**Note ownership — after**
+
+![Note ownership after](before-after/ownership-after.png)
+
+Alice could still read her own note, but requesting the administrator's note returned HTTP 404 with `not found`. The query now checks both the note ID and its owner.
+
+The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
+
 **Fix commit:** [`2c5df1b`](https://github.com/ninacodin/software-security-Jikko/commit/2c5df1b)
 
 ### 2.3 F-C03 — The Admin Endpoint Exposed Password Hashes
@@ -77,6 +122,22 @@ The query was changed to select only the fields needed for the user list.
 ```
 
 **Test result:** Administrators could still view the user list. Each account object contained only `id`, `username`, and `role`. The response did not contain a `password` field or the seeded password hashes. Regular users and visitors without a session still received HTTP 403.
+
+#### Playwright before-and-after evidence
+
+**Admin response fields — before**
+
+![Admin response fields before](before-after/admin-before.png)
+
+The administrator's account-list response included a `password` field with a hash for each account. These values were unnecessary for viewing account information.
+
+**Admin response fields — after**
+
+![Admin response fields after](before-after/admin-after.png)
+
+The account-list response contains only `id`, `username`, and `role`. Removing the password column from the query prevents hashes from entering the response.
+
+The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
 **Fix commit:** [`1e605be`](https://github.com/ninacodin/software-security-Jikko/commit/1e605be)
 
@@ -106,7 +167,35 @@ These excerpts show the main changes. The full patch is available in the linked 
 
 **Test result:** Note content containing `<script>` and `<img>` tags was escaped in the home and search responses. The text `{{7*7}}` remained unchanged instead of being evaluated as `49`. Export output was also escaped. The export test used mocked subprocess output and did not execute a shell payload.
 
-The tests confirm output encoding and separation of data from template source. They do not establish cross-user XSS or demonstrate JavaScript execution in a browser. In the normal interface, users view their own notes, so any claim about an effect on another user requires further evidence.
+The tests confirm output encoding and separation of data from template source. The automated tests and browser figures do not establish cross-user XSS or demonstrate successful JavaScript execution. In the normal interface, users view their own notes, so any claim about an effect on another user requires further evidence.
+
+#### Playwright before-and-after evidence
+
+**Stored HTML and JavaScript — before**
+
+![Stored HTML and JavaScript before](before-after/xss-before.png)
+
+The stored HTML payload was interpreted by the browser. Playwright recorded actual `C04` JavaScript dialog messages and dismissed them to continue the capture. The panel preserves those observations; a repeated render can trigger the same payload more than once.
+
+**Stored HTML and JavaScript — after**
+
+![Stored HTML and JavaScript after](before-after/xss-after.png)
+
+The same title and body are displayed as literal tag text. No JavaScript dialogs were observed in the checked flow. This supports the output-escaping change without claiming that every possible XSS payload was tested.
+
+**Stored template expression — before**
+
+![Stored template expression before](before-after/template-before.png)
+
+The stored body `check {{7*7}}` appeared as `check 49` in search results. The application had treated note content as part of the Jinja template source.
+
+**Stored template expression — after**
+
+![Stored template expression after](before-after/template-after.png)
+
+Search results retain `check {{7*7}}` exactly. Passing note values into a fixed template keeps the expression as data rather than evaluating it.
+
+The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
 **Fix commit:** [`80cf57a`](https://github.com/ninacodin/software-security-Jikko/commit/80cf57a)
 
@@ -126,6 +215,22 @@ The startup call now explicitly disables debug mode, the debugger, and the reloa
 ```
 
 **Test result:** The test confirmed that the startup code passed all three disabling options, including when `FLASK_DEBUG=1` was set. It mocked `Flask.run` to avoid starting a server. This result covers the modified entry point. Starting the application through Flask CLI or a separate deployment configuration requires its own checks.
+
+#### Playwright before-and-after evidence
+
+**Startup configuration — before**
+
+![Startup configuration before](before-after/debug-before.png)
+
+The configuration check captured `debug=True` from the original entry point by mocking `Flask.run`. This is a startup-configuration test, not an exposed interactive debugger.
+
+**Startup configuration — after**
+
+![Startup configuration after](before-after/debug-after.png)
+
+The same configuration check captured `debug=False`, `use_debugger=False`, and `use_reloader=False`. Both evidence servers were themselves run without debug mode for safe local capture.
+
+The [evidence appendix](before-after/README.md) explains the captured results, source commits, timestamps, and limitations of these images.
 
 **Fix commit:** [`af24b72`](https://github.com/ninacodin/software-security-Jikko/commit/af24b72)
 
@@ -152,13 +257,32 @@ The saved [test log](test-results.txt) records 17 passing tests with exit code 0
 
 The suite checks normal use as well as rejected requests. This helps confirm that users can still register and log in, owners can read their notes, and administrators can view the user list after the fixes.
 
+### 3.1 Before-and-After Browser Evidence
+
+A separate controlled capture compares the original baseline with the integrated main version at commit `b1a977dc5100a423ba9953d94465cce40d4c6914`. Both databases were newly seeded with `TEAM_ID=Jikko`. Playwright captured 16 screenshots in eight pairs: team identity, role assignment, duplicate registration, note ownership, admin response fields, XSS, template evaluation, and startup configuration.
+
+[Open the complete before-and-after figures and explanations](before-after/README.md). Each pair includes the observed result and capture time. The [capture manifest](before-after/manifest.json) records source commits, actual request results and screenshot checksums. Student ID `6631503106` identifies the tester; it is separate from the team identifier.
+
+| Check | Before | After |
+|---|---|---|
+| Team identity | Seeded as Jikko | Seeded as Jikko |
+| Registration with role=admin | Admin endpoint accessible, HTTP 200 | Regular-user account, HTTP 403 |
+| Duplicate username | Accepted, HTTP 302 | Rejected, HTTP 409 |
+| Reading another owner's note | Note returned, HTTP 200 | Not found, HTTP 404 |
+| Admin user list | Password hashes included | Password fields omitted |
+| Stored HTML payload | JavaScript dialogs recorded | Literal text; no dialogs in the checked flow |
+| Stored template expression | Evaluated as 49 | Preserved as {{7*7}} |
+| Startup configuration | debug=True | Debugger and reloader explicitly disabled |
+
+The timestamps and command output were generated during capture, not added to finished images. The execution panel is a browser-rendered record, not an OS terminal. A full desktop capture with a real terminal is still needed to meet the course's exact evidence format. The debug pair records the source entry point with Flask.run mocked; both capture servers themselves used debug=False. The after version includes other team members' fixes and should not be presented as an isolated test of Part C alone.
+
 ## 4. Limitations and Integration
 
 The unique username constraint was added to the schema in `seed()`, so it applies to newly created databases. An existing database needs a migration and a check for duplicate accounts. Updating the source code alone does not change its schema.
 
 When merging Part A, the team must retain both the SQL fixes and the updated rendering in `search()`. The command execution fix and output escaping in `export()` must also be kept together. When merging Part B, the updated password hashing must preserve server-side role assignment and unique usernames.
 
-The recorded unit tests do not provide evidence of a Docker build or a complete browser test. Submission screenshots still need to be captured from the team's actual test environment, including the tester's identity and timestamp as required by the course. Application tests and build checks should be repeated after all branches are merged.
+The recorded unit tests do not provide evidence of a Docker build. The browser figures document only the manual cases shown and do not replace a complete browser test. Final submission evidence still requires the tester's identity and timestamp as specified by the course. Application tests and build checks should be repeated after all branches are merged.
 
 ## 5. Discussion
 

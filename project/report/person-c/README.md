@@ -71,3 +71,7 @@ Username เป็นตัวอ้างอิงเจ้าของโน�
 - [OWASP A05:2025 — Injection](https://top10.owasp.org/2025/A05_2025-Injection/)
 - MITRE: [CWE-269](https://cwe.mitre.org/data/definitions/269.html), [CWE-266](https://cwe.mitre.org/data/definitions/266.html), [CWE-639](https://cwe.mitre.org/data/definitions/639.html), [CWE-200](https://cwe.mitre.org/data/definitions/200.html), [CWE-79](https://cwe.mitre.org/data/definitions/79.html), [CWE-1336](https://cwe.mitre.org/data/definitions/1336.html), [CWE-489](https://cwe.mitre.org/data/definitions/489.html)
 - Flask: [การทำ autoescape ของ template](https://flask.palletsprojects.com/en/stable/templating/), [debugger และความเสี่ยง](https://flask.palletsprojects.com/en/stable/debugging/)
+
+## หลักฐานภาพฉบับปัจจุบัน
+
+ใช้ชุด [Playwright ก่อน–หลัง 16 ภาพ](before-after/README.md) ใน [REVIEW.md](REVIEW.md) แทนชุดภาพที่แคปเองเดิม ภาพใหม่ใช้ `TEAM_ID=Jikko` พร้อม timestamp และมีคำอธิบายข้อจำกัดเรื่องภาพ terminal อยู่ในภาคผนวก

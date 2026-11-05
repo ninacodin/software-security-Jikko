@@ -1,0 +1,342 @@
+[
+  {
+    "file": "team-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:44:59+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "team",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/api/notes/3",
+        "status": 200,
+        "body": "{\"body\":\"team=Jikko marker=23dea5621f12\",\"id\":3,\"owner\":\"admin\",\"title\":\"build-tag\"}\n"
+      }
+    },
+    "sha256": "85bced7b3e7ae8bcc469db7cc47646ea91a9527eaa221a19475971af04175147"
+  },
+  {
+    "file": "registration-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:00+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "registration",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "request": "POST /register",
+      "submitted": {
+        "username": "c-evidence",
+        "role": "admin",
+        "password": "[test password omitted]"
+      },
+      "registration_status": 302,
+      "displayed_request": {
+        "method": "GET",
+        "path": "/admin",
+        "status": 200,
+        "body": "[{\"id\":1,\"password\":\"15da1f78ad7d474862865bab1aab4d51\",\"role\":\"user\",\"username\":\"alice\"},{\"id\":2,\"password\":\"0192023a7bbd73250516f069df18b500\",\"role\":\"admin\",\"username\":\"admin\"},{\"id\":3,\"password\":\"dfb450efddbb5387197c84460623675b\",\"role\":\"admin\",\"username\":\"c-evidence\"}]\n"
+      }
+    },
+    "sha256": "7d28c8cf0efc46688e4911999f3208a118adf95a63ad58d1a66468dd251ba448"
+  },
+  {
+    "file": "duplicate-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:01+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "duplicate",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "request": "POST /register",
+      "submitted_username": "alice",
+      "status": 302,
+      "response": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n<title>Redirecting...</title>\n<h1>Redirecting...</h1>\n<p>You should be redirected automatically to target URL: <a href=\"/\">/</a>. If not click the link.",
+      "note": "The displayed home page is context; the duplicate POST result is recorded here."
+    },
+    "sha256": "d2784b411304dca83c973ffac63fd45a33a7387e2d6fd2746e49c6dcd24c3bd9"
+  },
+  {
+    "file": "ownership-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:01+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "ownership",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "own_note": {
+        "status": 200,
+        "body": {
+          "body": "milk, eggs",
+          "id": 1,
+          "owner": "alice",
+          "title": "groceries"
+        }
+      },
+      "displayed_request": {
+        "method": "GET",
+        "path": "/api/notes/2",
+        "status": 200,
+        "body": "{\"body\":\"prod db password is hunter2\",\"id\":2,\"owner\":\"admin\",\"title\":\"infra\"}\n"
+      }
+    },
+    "sha256": "44a6315a4e19901127e9cc739ad1c70e0eb94b4b2ed050361bc2053c15e21eed"
+  },
+  {
+    "file": "admin-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:02+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "admin",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/admin",
+        "status": 200,
+        "body": "[{\"id\":1,\"password\":\"15da1f78ad7d474862865bab1aab4d51\",\"role\":\"user\",\"username\":\"alice\"},{\"id\":2,\"password\":\"0192023a7bbd73250516f069df18b500\",\"role\":\"admin\",\"username\":\"admin\"},{\"id\":3,\"password\":\"dfb450efddbb5387197c84460623675b\",\"role\":\"admin\",\"username\":\"c-evidence\"},{\"id\":4,\"password\":\"fe8461434d3a3c096eb3503fc044719c\",\"role\":\"user\",\"username\":\"alice\"}]\n"
+      }
+    },
+    "sha256": "17d4c4ca05ffa223bb4950d203037e34b4d2f1ecf08814a4766e325d2d1736db"
+  },
+  {
+    "file": "xss-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:03+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "xss",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "submitted_title": "<script>alert('C04')</script>",
+      "submitted_body": "xss-evidence <img src=x onerror=alert('C04')>",
+      "browser_dialog_messages": [
+        "C04",
+        "C04",
+        "C04",
+        "C04"
+      ],
+      "rendered_text": "back\n: xss-evidence ",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/search?q=xss-evidence",
+        "status": 200
+      }
+    },
+    "sha256": "2cf0dda99dc774d7e00dc2582d1489ed6c8d4bd068cedcebf957f5466f1233a1"
+  },
+  {
+    "file": "template-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:04+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "template",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "submitted_title": "Template evidence",
+      "submitted_body": "check {{7*7}}",
+      "browser_dialog_messages": [
+        "C04",
+        "C04",
+        "C04",
+        "C04"
+      ],
+      "rendered_text": "back\nTemplate evidence: check 49",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/search?q=check",
+        "status": 200
+      }
+    },
+    "sha256": "c9b04704ac685c62c6eb383ac7df986a1090bc447fd2f1c6bf5880de834e16d5"
+  },
+  {
+    "file": "debug-before.png",
+    "source_commit": "0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c",
+    "captured_at": "2026-10-30T17:45:05+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "debug",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "method": "Exact source entry point executed with Flask.run mocked (no debug server exposed)",
+      "startup_options": {
+        "debug": true,
+        "use_debugger": "default follows debug",
+        "use_reloader": "default follows debug"
+      }
+    },
+    "sha256": "09042b60dbd63052399d8a0a0dd1a84fd7e2b75bef7bb41c2e15e0b8c91c74df"
+  },
+  {
+    "file": "team-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:06+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "team",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/api/notes/3",
+        "status": 200,
+        "body": "{\"body\":\"team=Jikko marker=23dea5621f12\",\"id\":3,\"owner\":\"admin\",\"title\":\"build-tag\"}\n"
+      }
+    },
+    "sha256": "d5d42fe1e84c474c1156151b9152889fd45997c71d997505153ce07c2b5f967b"
+  },
+  {
+    "file": "registration-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:07+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "registration",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "request": "POST /register",
+      "submitted": {
+        "username": "c-evidence",
+        "role": "admin",
+        "password": "[test password omitted]"
+      },
+      "registration_status": 302,
+      "displayed_request": {
+        "method": "GET",
+        "path": "/admin",
+        "status": 403,
+        "body": "forbidden"
+      }
+    },
+    "sha256": "7bbc1e660c76ff854892f1d89e4e1c1f07c18a0f2078140036b81c9fa550b9f5"
+  },
+  {
+    "file": "duplicate-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:08+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "duplicate",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "request": "POST /register",
+      "submitted_username": "alice",
+      "status": 409,
+      "response": "{\"error\":\"username already exists\"}\n",
+      "note": "The displayed home page is context; the duplicate POST result is recorded here."
+    },
+    "sha256": "1e3a488584a91307d23ebbc294da2f987d7730d810b954046894737d4f32faec"
+  },
+  {
+    "file": "ownership-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:09+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "ownership",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "own_note": {
+        "status": 200,
+        "body": {
+          "body": "milk, eggs",
+          "id": 1,
+          "owner": "alice",
+          "title": "groceries"
+        }
+      },
+      "displayed_request": {
+        "method": "GET",
+        "path": "/api/notes/2",
+        "status": 404,
+        "body": "{\"error\":\"not found\"}\n"
+      }
+    },
+    "sha256": "bd39e999f65b406e282b4a2d4b125daceae7b5bef0fce080865685eb360776cb"
+  },
+  {
+    "file": "admin-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:09+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "admin",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/admin",
+        "status": 200,
+        "body": "[{\"id\":1,\"role\":\"user\",\"username\":\"alice\"},{\"id\":2,\"role\":\"admin\",\"username\":\"admin\"},{\"id\":3,\"role\":\"user\",\"username\":\"c-evidence\"}]\n"
+      }
+    },
+    "sha256": "e4b6d5ee54501a5a21e0b0898d45cfba1751746471a26ffe17f411a6a8b47961"
+  },
+  {
+    "file": "xss-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:11+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "xss",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "submitted_title": "<script>alert('C04')</script>",
+      "submitted_body": "xss-evidence <img src=x onerror=alert('C04')>",
+      "browser_dialog_messages": [],
+      "rendered_text": "back\n<script>alert('C04')</script>: xss-evidence <img src=x onerror=alert('C04')>",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/search?q=xss-evidence",
+        "status": 200
+      }
+    },
+    "sha256": "4ee053084f111e95aceb64489f65faeb96e77f8845731e166a64398216b2eb81"
+  },
+  {
+    "file": "template-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:12+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "template",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "submitted_title": "Template evidence",
+      "submitted_body": "check {{7*7}}",
+      "browser_dialog_messages": [],
+      "rendered_text": "back\nTemplate evidence: check {{7*7}}",
+      "displayed_request": {
+        "method": "GET",
+        "path": "/search?q=check",
+        "status": 200
+      }
+    },
+    "sha256": "ac19116ad86d6787c85c20f5946a905fed67e39a6fbf298b3bdea2a8bb05087f"
+  },
+  {
+    "file": "debug-after.png",
+    "source_commit": "b1a977dc5100a423ba9953d94465cce40d4c6914",
+    "captured_at": "2026-10-30T17:45:12+07:00",
+    "TEAM_ID": "Jikko",
+    "record": {
+      "case": "debug",
+      "TEAM_ID": "Jikko",
+      "student_id": "6631503106",
+      "method": "Exact source entry point executed with Flask.run mocked (no debug server exposed)",
+      "startup_options": {
+        "debug": false,
+        "use_debugger": false,
+        "use_reloader": false
+      }
+    },
+    "sha256": "2c3725442813b32eb0d9f7688c05d3ab287f2892b6fba3c0a4cdf23fc272e3f6"
+  }
+]
