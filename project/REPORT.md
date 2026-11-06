@@ -140,7 +140,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/login` |
 | Reproduction | `POST /login` `username=admin'-- -` `password=wrong` — `-- -` comments out the password check. |
 | Impact | Log in as any user, including `admin`, without a password. |
-| Evidence | `302` + `Set-Cookie: session=…` — [screenshot](report/person-a/screenshots/1-before-login.png) |
+| Evidence | `302` + `Set-Cookie: session=…` (figure below) |
+
+![F-01 before — admin'-- - logs in: 302 + session cookie](report/person-a/screenshots/1-before-login.png)
 
 ### Finding F-02 — SQL injection at `/search` (credential dump via UNION) · *owner: Supawan*
 | Field | Value |
@@ -151,7 +153,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/search` |
 | Reproduction | `GET /search?q=%' UNION SELECT id,username,password FROM users-- -` |
 | Impact | Every username and password hash is returned on the page. |
-| Evidence | `alice: 15da1f78…`, `admin: 0192023a…` — [screenshot](report/person-a/screenshots/2-before-search.png) |
+| Evidence | `alice: 15da1f78…`, `admin: 0192023a…` (figure below) |
+
+![F-02 before — UNION payload dumps usernames and MD5 hashes](report/person-a/screenshots/2-before-search.png)
 
 ### Finding F-03 — OS command injection at `/export` (RCE as root) · *owner: Supawan*
 | Field | Value |
@@ -162,7 +166,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/export` — `subprocess.run("echo exporting notes as " + fmt, shell=True)` |
 | Reproduction | `GET /export?fmt=txt;id` |
 | Impact | Arbitrary command execution as `uid=0(root)` in the container. |
-| Evidence | output contains `uid=0(root) gid=0(root)` — [screenshot](report/person-a/screenshots/3-before-export.png) |
+| Evidence | output contains `uid=0(root) gid=0(root)` (figure below) |
+
+![F-03 before — fmt=txt;id runs id as root](report/person-a/screenshots/3-before-export.png)
 
 ### Finding F-04 — Hard-coded session-signing key · *owner: Phuriphat*
 | Field | Value |
@@ -312,7 +318,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `Dockerfile` — `FROM python:3.12`, `ENV APP_SECRET=notevault-dev-secret`, `COPY . .`, no `USER` |
 | Reproduction | `trivy fs --scanners misconfig project/starter-app` → `DS-0002` (HIGH, root), `DS-0031` (CRITICAL, secret in `ENV`). |
 | Impact | Any code-exec bug (F-03) runs as root; the signing key ships in an image layer; the base image can change under the build. |
-| Evidence | [screenshot](report/person-d/evidence/ci/fig-trivy-before-3-dockerfile.png) |
+| Evidence | Trivy misconfig scan of the baseline Dockerfile (figure below) |
+
+![F-15 before — Trivy DS-0002 (root) and DS-0031 (baked secret)](report/person-d/evidence/ci/fig-trivy-before-3-dockerfile.png)
 
 ---
 
