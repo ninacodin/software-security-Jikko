@@ -2,10 +2,10 @@
   "$schema": "http://cyclonedx.org/schema/bom-1.7.schema.json",
   "bomFormat": "CycloneDX",
   "specVersion": "1.7",
-  "serialNumber": "urn:uuid:87c8eccf-0bbe-4ae7-9cf4-068515503ffb",
+  "serialNumber": "urn:uuid:b71c5e86-8fab-4faf-a200-dd88aeb63cce",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-10-20T09:11:40+00:00",
+    "timestamp": "2026-11-06T11:38:13+00:00",
     "tools": {
       "components": [
         {
@@ -15,16 +15,24 @@
           },
           "group": "aquasecurity",
           "name": "trivy",
-          "version": "0.76.0"
+          "version": "0.76.2"
         }
       ]
     },
     "component": {
-      "bom-ref": "pkg:oci/starter-app-notevault@sha256:068f72af573436e8e813e191f2f14f82b1119c21db6b6c76225a279dea5b5362?arch=amd64&repository_url=index.docker.io%2Flibrary%2Fstarter-app-notevault",
+      "bom-ref": "pkg:oci/notevault@sha256:0e4673554ab46e44a54992a3ee30b6a7902cd9a30d8d8e4ff1d40a91117f37f7?arch=amd64&repository_url=index.docker.io%2Flibrary%2Fnotevault",
       "type": "container",
-      "name": "starter-app-notevault:latest",
-      "purl": "pkg:oci/starter-app-notevault@sha256:068f72af573436e8e813e191f2f14f82b1119c21db6b6c76225a279dea5b5362?arch=amd64&repository_url=index.docker.io%2Flibrary%2Fstarter-app-notevault",
+      "name": "notevault:after",
+      "purl": "pkg:oci/notevault@sha256:0e4673554ab46e44a54992a3ee30b6a7902cd9a30d8d8e4ff1d40a91117f37f7?arch=amd64&repository_url=index.docker.io%2Flibrary%2Fnotevault",
       "properties": [
+        {
+          "name": "aquasecurity:trivy:DiffID",
+          "value": "sha256:051395e80076660ae3490a09276140426b0bbb5a38415e6fc1f3907c4ebbabc6"
+        },
+        {
+          "name": "aquasecurity:trivy:DiffID",
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
+        },
         {
           "name": "aquasecurity:trivy:DiffID",
           "value": "sha256:15f1c8eb1ab18eae260c7fb6296434cbe1ff0e1e30fd814ae92a80dd54005e62"
@@ -35,7 +43,7 @@
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:8f978d9a17de2a476928f76f3bd56be759383fa4032d2b734f27d2a661dc764d"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
@@ -43,7 +51,7 @@
         },
         {
           "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:b5d5fafb1f2236fcbf98f62e2c42219b14468c99a406e331d19c7b8ff2c52af8"
+          "value": "sha256:ba00118bb16e990199e9710efbcd79173241526c7f9bb67f2d471c69eecf17ca"
         },
         {
           "name": "aquasecurity:trivy:DiffID",
@@ -54,40 +62,28 @@
           "value": "sha256:e1fa2746ad6d51e7de9171dfcbb1fe93d01d51c5d8d3623e0c3b223076dc5d23"
         },
         {
-          "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:f0797d7312a7b8c7f16ee22a863240896e14f2ba3aea09bfba2bb63c389bf65a"
-        },
-        {
-          "name": "aquasecurity:trivy:DiffID",
-          "value": "sha256:f84b599a557ed43a725de61f694f559f8bf07ad5012a7882974aff00b400babd"
-        },
-        {
           "name": "aquasecurity:trivy:ImageID",
-          "value": "sha256:068f72af573436e8e813e191f2f14f82b1119c21db6b6c76225a279dea5b5362"
-        },
-        {
-          "name": "aquasecurity:trivy:Labels:com.docker.compose.project",
-          "value": "starter-app"
-        },
-        {
-          "name": "aquasecurity:trivy:Labels:com.docker.compose.service",
-          "value": "notevault"
-        },
-        {
-          "name": "aquasecurity:trivy:Labels:com.docker.compose.version",
-          "value": "5.3.1"
+          "value": "sha256:0e4673554ab46e44a54992a3ee30b6a7902cd9a30d8d8e4ff1d40a91117f37f7"
         },
         {
           "name": "aquasecurity:trivy:Reference",
-          "value": "starter-app-notevault:latest"
+          "value": "notevault:after"
         },
         {
           "name": "aquasecurity:trivy:RepoDigest",
-          "value": "starter-app-notevault@sha256:068f72af573436e8e813e191f2f14f82b1119c21db6b6c76225a279dea5b5362"
+          "value": "localhost:5000/notevault@sha256:0e4673554ab46e44a54992a3ee30b6a7902cd9a30d8d8e4ff1d40a91117f37f7"
+        },
+        {
+          "name": "aquasecurity:trivy:RepoDigest",
+          "value": "notevault@sha256:0e4673554ab46e44a54992a3ee30b6a7902cd9a30d8d8e4ff1d40a91117f37f7"
         },
         {
           "name": "aquasecurity:trivy:RepoTag",
-          "value": "starter-app-notevault:latest"
+          "value": "localhost:5000/notevault:after"
+        },
+        {
+          "name": "aquasecurity:trivy:RepoTag",
+          "value": "notevault:after"
         },
         {
           "name": "aquasecurity:trivy:SchemaVersion",
@@ -95,14 +91,14 @@
         },
         {
           "name": "aquasecurity:trivy:Size",
-          "value": "128893440"
+          "value": "129554432"
         }
       ]
     }
   },
   "components": [
     {
-      "bom-ref": "35d171f5-f8ed-4308-83cc-14aaa6f81ef1",
+      "bom-ref": "f4f15480-5873-4a66-8ae1-500ecd1a03df",
       "type": "operating-system",
       "name": "debian",
       "version": "13.7",
@@ -6873,6 +6869,44 @@
       ]
     },
     {
+      "bom-ref": "pkg:pypi/bcrypt@4.2.1",
+      "type": "library",
+      "name": "bcrypt",
+      "version": "4.2.1",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "c107353ac061192d71598a05a69d422a398ca2db"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:pypi/bcrypt@4.2.1",
+      "properties": [
+        {
+          "name": "aquasecurity:trivy:FilePath",
+          "value": "usr/local/lib/python3.12/site-packages/bcrypt-4.2.1.dist-info/METADATA"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDiffID",
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
+        },
+        {
+          "name": "aquasecurity:trivy:LayerDigest",
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
+        },
+        {
+          "name": "aquasecurity:trivy:PkgType",
+          "value": "python-pkg"
+        }
+      ]
+    },
+    {
       "bom-ref": "pkg:pypi/blinker@1.9.0",
       "type": "library",
       "name": "blinker",
@@ -6898,11 +6932,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6936,11 +6970,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -6974,11 +7008,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7012,11 +7046,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7050,11 +7084,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7088,11 +7122,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7164,11 +7198,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7202,11 +7236,11 @@
         },
         {
           "name": "aquasecurity:trivy:LayerDiffID",
-          "value": "sha256:9c927ac30c5ab41f9f3e09dc62919752c4e7c0b8df8208dcde061d3466d62e06"
+          "value": "sha256:10b3a09bc5da03c9ac1d7946433c09c0f7a7dac08cb4b4e8ce1afa9e01202f32"
         },
         {
           "name": "aquasecurity:trivy:LayerDigest",
-          "value": "sha256:ebe997a3b5914a12ecffcc2e0d0c411e73b2b4dd7e64a730e49e98d23b950de7"
+          "value": "sha256:d735b2f89841505126931cdd1ac41a36a7780703e9772f6a84085a99aac3fced"
         },
         {
           "name": "aquasecurity:trivy:PkgType",
@@ -7217,7 +7251,7 @@
   ],
   "dependencies": [
     {
-      "ref": "35d171f5-f8ed-4308-83cc-14aaa6f81ef1",
+      "ref": "f4f15480-5873-4a66-8ae1-500ecd1a03df",
       "dependsOn": [
         "pkg:deb/debian/apt@3.0.3?arch=amd64&distro=debian-13.7",
         "pkg:deb/debian/bash@5.2.37-2%2Bb10?arch=amd64&distro=debian-13.7",
@@ -7808,9 +7842,10 @@
       ]
     },
     {
-      "ref": "pkg:oci/starter-app-notevault@sha256:068f72af573436e8e813e191f2f14f82b1119c21db6b6c76225a279dea5b5362?arch=amd64&repository_url=index.docker.io%2Flibrary%2Fstarter-app-notevault",
+      "ref": "pkg:oci/notevault@sha256:0e4673554ab46e44a54992a3ee30b6a7902cd9a30d8d8e4ff1d40a91117f37f7?arch=amd64&repository_url=index.docker.io%2Flibrary%2Fnotevault",
       "dependsOn": [
-        "35d171f5-f8ed-4308-83cc-14aaa6f81ef1",
+        "f4f15480-5873-4a66-8ae1-500ecd1a03df",
+        "pkg:pypi/bcrypt@4.2.1",
         "pkg:pypi/blinker@1.9.0",
         "pkg:pypi/click@8.5.0",
         "pkg:pypi/flask@3.1.3",
@@ -7821,6 +7856,10 @@
         "pkg:pypi/pyjwt@2.15.1",
         "pkg:pypi/werkzeug@3.1.9"
       ]
+    },
+    {
+      "ref": "pkg:pypi/bcrypt@4.2.1",
+      "dependsOn": []
     },
     {
       "ref": "pkg:pypi/blinker@1.9.0",

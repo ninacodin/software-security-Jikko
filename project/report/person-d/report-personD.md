@@ -88,7 +88,7 @@ from running the tools; raw output is under `evidence/`, `sbom/`, `cosign/`.
 
 ## §6 — Supply-Chain Hardening
 
-- **SBOM:** `sbom/sbom.json` — **CycloneDX 1.7, 97 components**, generated from the
+- **SBOM:** `sbom/sbom.json` — **CycloneDX 1.7, 98 components**, generated from the
   built image with Trivy:
   `trivy image --format cyclonedx -o sbom.json starter-app-notevault:latest`.
 - **Signing (Cosign):** image signed by digest with a key pair; signature and a

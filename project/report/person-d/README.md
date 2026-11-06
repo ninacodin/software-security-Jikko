@@ -29,7 +29,7 @@ checked in under `evidence/` and `sbom/`.
 
 ## SBOM + signing (§6)
 
-- `sbom/sbom.json` — CycloneDX 1.7, **97 components**, generated from the built image.
+- `sbom/sbom.json` — CycloneDX 1.7, **98 components**, generated from the final integrated image.
 - `cosign/cosign.pub` — public key. `cosign/verify-output.txt` +
   `cosign/verify-attestation.txt` — `cosign verify` / `verify-attestation` output.
 - The signing **private key is intentionally not committed** (`cosign/.gitignore`).
