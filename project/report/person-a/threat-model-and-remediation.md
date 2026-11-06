@@ -43,14 +43,14 @@ command.
 ## 3. Threat Model — STRIDE  *(20 pts)*
 
 STRIDE applied to each DFD element / flow. ✔ = a realistic threat exists in the current code.
-Owner **A** = Injection & Input (my scope); others noted for completeness (whole-app model).
+Owner **Supawan** = Injection & Input (my scope); others noted for completeness (whole-app model).
 
 | Element / data flow | S | T | R | I | D | E | Top threat & mitigation |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|---|
 | **TB1** HTTP request → P1 (all input) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ | Untrusted input is the root of every finding. Validate/encode at the boundary; authn+authz per route. |
-| **F1/TB2** login creds → SQL *(A)* | ✔ | ✔ | | | | ✔ | **CWE-89 SQLi auth bypass** (`admin'-- -`). *Fix: parameterized query.* ✅ |
-| **F4/TB2** search `q` → SQL *(A)* | | ✔ | | ✔ | | | **CWE-89 SQLi** `UNION SELECT` dumps all password hashes. *Fix: parameterized + `LIKE`/`ESCAPE`.* ✅ |
-| **F5/TB3** export `fmt` → shell *(A)* | | ✔ | | ✔ | ✔ | ✔ | **CWE-78 command injection** (`fmt=txt;id` → RCE as root). *Fix: allowlist + `shell=False`.* ✅ |
+| **F1/TB2** login creds → SQL *(Supawan)* | ✔ | ✔ | | | | ✔ | **CWE-89 SQLi auth bypass** (`admin'-- -`). *Fix: parameterized query.* ✅ |
+| **F4/TB2** search `q` → SQL *(Supawan)* | | ✔ | | ✔ | | | **CWE-89 SQLi** `UNION SELECT` dumps all password hashes. *Fix: parameterized + `LIKE`/`ESCAPE`.* ✅ |
+| **F5/TB3** export `fmt` → shell *(Supawan)* | | ✔ | | ✔ | ✔ | ✔ | **CWE-78 command injection** (`fmt=txt;id` → RCE as root). *Fix: allowlist + `shell=False`.* ✅ |
 | **F2/TB4** session JWT (verify) | ✔ | ✔ | ✔ | | | ✔ | **CWE-347** accepts `none` alg → forge admin. **CWE-798** hardcoded secret. *(Phuriphat)* |
 | **P1** `/register` role field | | | | | | ✔ | **CWE-269** client sets `role=admin` → privilege escalation. *(Danaiphong)* |
 | **F6** `/api/notes/<id>` | | | | ✔ | | ✔ | **CWE-639 IDOR** — any note by id, no owner check. *(Danaiphong)* |
@@ -65,10 +65,10 @@ Owner **A** = Injection & Input (my scope); others noted for completeness (whole
 
 | # | Risk | CWE | Likelihood | Impact | Rating | Owner |
 |---|---|---|---|---|---|---|
-| 1 | Command injection at `/export` → RCE as **root** in container | CWE-78 | High | Critical | **Critical** | A ✅ |
+| 1 | Command injection at `/export` → RCE as **root** in container | CWE-78 | High | Critical | **Critical** | Supawan ✅ |
 | 2 | JWT `none` alg / hardcoded secret → forge admin session | CWE-347/798 | High | Critical | **Critical** | B |
-| 3 | SQLi at `/login` → authentication bypass | CWE-89 | High | High | **High** | A ✅ |
-| 4 | SQLi at `/search` (`UNION`) → dump all credential hashes | CWE-89 | High | High | **High** | A ✅ |
+| 3 | SQLi at `/login` → authentication bypass | CWE-89 | High | High | **High** | Supawan ✅ |
+| 4 | SQLi at `/search` (`UNION`) → dump all credential hashes | CWE-89 | High | High | **High** | Supawan ✅ |
 | 5 | `/register` role injection → privilege escalation | CWE-269 | High | High | **High** | C |
 
 *Risks 1, 3, 4 (injection scope) remediated on `fix/injection-input-6631503042`; see §4–§5. Risk 1 is

@@ -1,4 +1,4 @@
-# งานคน C — Access Control & Output
+# งานของ Danaiphong — Access Control & Output
 
 Branch: `Bas/access-control-output`
 
@@ -10,7 +10,7 @@ Branch: `Bas/access-control-output`
 
 ## ขอบเขตและข้อจำกัด
 
-| Finding | หน้าที่คน C | หมวดที่แนะนำในรายงาน |
+| Finding | หน้าที่ของ Danaiphong | หมวดที่แนะนำในรายงาน |
 |---|---|---|
 | F-C01 | บังคับ role ผู้สมัครใหม่ที่เซิร์ฟเวอร์ และป้องกัน username ซ้ำที่ทำให้สวมตัวตนบัญชีเดิมได้ | CWE-269 ตามการแบ่งงาน; ใช้ CWE-266 เพิ่มเพื่อระบุสาเหตุเฉพาะ, OWASP A01:2025 |
 | F-C02 | ตรวจเจ้าของโน้ตก่อนส่งข้อมูลจาก `/api/notes/<nid>` | CWE-639, OWASP A01:2025; API1:2023 ใช้อธิบาย BOLA เพิ่มได้ |
@@ -20,7 +20,7 @@ Branch: `Bas/access-control-output`
 
 การจับหมวด OWASP ในตารางเป็นการวิเคราะห์ตามพฤติกรรมของแอป ไม่ได้แปลว่าทุก CWE ปรากฏโดยตรงในรายการ mapped CWEs ของหมวดนั้น MITRE แนะนำให้เลือก CWE ที่เฉพาะเจาะจงกว่าหมวดกว้าง เช่น CWE-269 สำหรับรายงานช่องโหว่จริง
 
-คน A ยังรับผิดชอบ SQL injection ที่ login/search และ command injection ที่ export; คน B รับผิดชอบ JWT, secret, password hashing และ cookie/session; คน D รับผิดชอบ dependencies, Docker, SBOM, signing และ CI การแก้ส่วน C อย่างเดียวจึงยังไม่ทำให้ NoteVault พร้อมใช้งานจริง
+Supawan รับผิดชอบ SQL injection ที่ login/search และ command injection ที่ export; Phuriphat รับผิดชอบ JWT, secret, password hashing และ cookie/session; Sadayu รับผิดชอบ dependencies, Docker, SBOM, signing และ CI การแก้ส่วนของ Danaiphong อย่างเดียวจึงยังไม่ทำให้ NoteVault พร้อมใช้งานจริง
 
 ## ตรวจงานในเครื่อง
 
@@ -38,7 +38,7 @@ python3.12 -m venv .venv
 .venv/bin/python -m unittest discover -s project/tests -p 'test_person_c.py' -v
 ```
 
-เลือก Python 3.12 ให้ตรงรุ่นหลัก/รองกับ Dockerfile เดิม การใช้ Python 3.14 กับ dependency เก่าที่โปรเจกต์ตรึงไว้อาจล้มตั้งแต่ import เช่น Werkzeug 2.0.1 เรียก `ast.Str` ที่ถูกถอดออก จึงไม่ควรตีความ import error นั้นว่าเป็นผลของแพตช์ส่วน C
+เลือก Python 3.12 ให้ตรงรุ่นหลัก/รองกับ Dockerfile เดิม การใช้ Python 3.14 กับ dependency เก่าที่โปรเจกต์ตรึงไว้อาจล้มตั้งแต่ import เช่น Werkzeug 2.0.1 เรียก `ast.Str` ที่ถูกถอดออก จึงไม่ควรตีความ import error นั้นว่าเป็นผลของแพตช์ส่วนนี้
 
 อ่านชื่อกรณีทดสอบและผลจริงที่แสดงก่อนนำไปอ้างในรายงาน การผ่านชุดทดสอบเป็นหลักฐานสำหรับเงื่อนไขที่ตรวจเท่านั้น ไม่ใช่การยืนยันว่าไม่เหลือช่องโหว่ทั้งแอป
 
@@ -62,7 +62,7 @@ Username เป็นตัวอ้างอิงเจ้าของโน�
 - นำข้อความ/ตัวอย่างก่อน–หลังจาก [remediation.md](remediation.md) ไปประกอบรายงานหลัก เติม commit จริงและแนบภาพทดสอบของทีมตาม template
 - ดึง commit ที่อ้าง finding ได้ด้วย `git log --oneline --grep='F-C'`; ดู diff จริงด้วย `git show <commit>` ก่อนใส่รายงาน
 - เก็บจำนวนช่องโหว่และระดับความรุนแรงหลังรวมงานทั้งทีม ไม่รวม SSTI เป็นอีก finding ซ้ำถ้าทีมเลือกนับเป็นผลกระทบร่วมของ F-C04
-- เปิดเผยการใช้ AI ตามจริง เช่น “ใช้ Codex ช่วยตรวจโค้ดส่วน C เสนอและจัดทำแพตช์/การทดสอบ/ร่างเอกสาร สมาชิกตรวจสอบผลและอธิบายการแก้ด้วยตนเอง” ปรับข้อความให้ตรงกับสิ่งที่ทำจริง
+- เปิดเผยการใช้ AI ตามจริง เช่น “ใช้ Codex ช่วยตรวจโค้ดส่วน access control เสนอและจัดทำแพตช์/การทดสอบ/ร่างเอกสาร สมาชิกตรวจสอบผลและอธิบายการแก้ด้วยตนเอง” ปรับข้อความให้ตรงกับสิ่งที่ทำจริง
 
 ## แหล่งอ้างอิงหลัก
 

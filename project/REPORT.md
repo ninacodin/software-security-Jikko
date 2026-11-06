@@ -1,7 +1,7 @@
 # Term Project Report — Secure Build
 
 > Team report for **NoteVault** (`project/starter-app/`), following `REPORT-TEMPLATE.md`.
-> Each member's raw working notes and evidence live under [`report/`](report/) (see Appendix A).
+> Each member's raw working notes and evidence live under [`report/`](https://github.com/ninacodin/software-security-Jikko/tree/main/project/report) (see Appendix A).
 
 ## Cover
 
@@ -31,8 +31,8 @@ NoteVault is a small Flask web app and JSON API. Users register, log in (JWT in 
 and search their own notes, and export them; an admin can list all users. It worked end-to-end
 but had never been security-reviewed.
 
-The team split the review into four workstreams — **A** injection & input, **B** authentication,
-session & crypto, **C** access control & output, **D** supply chain & build/CI — and found
+The team split the review into four workstreams — injection & input (Supawan), authentication,
+session & crypto (Phuriphat), access control & output (Danaiphong), supply chain & build/CI (Sadayu) — and found
 **15 vulnerabilities**:
 
 | Severity | Count | Findings |
@@ -140,7 +140,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/login` |
 | Reproduction | `POST /login` `username=admin'-- -` `password=wrong` — `-- -` comments out the password check. |
 | Impact | Log in as any user, including `admin`, without a password. |
-| Evidence | `302` + `Set-Cookie: session=…` — [screenshot](report/person-a/screenshots/1-before-login.png) |
+| Evidence | `302` + `Set-Cookie: session=…` (figure below) |
+
+![F-01 before — admin'-- - logs in: 302 + session cookie](report/person-a/screenshots/1-before-login.png)
 
 ### Finding F-02 — SQL injection at `/search` (credential dump via UNION) · *owner: Supawan*
 | Field | Value |
@@ -151,7 +153,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/search` |
 | Reproduction | `GET /search?q=%' UNION SELECT id,username,password FROM users-- -` |
 | Impact | Every username and password hash is returned on the page. |
-| Evidence | `alice: 15da1f78…`, `admin: 0192023a…` — [screenshot](report/person-a/screenshots/2-before-search.png) |
+| Evidence | `alice: 15da1f78…`, `admin: 0192023a…` (figure below) |
+
+![F-02 before — UNION payload dumps usernames and MD5 hashes](report/person-a/screenshots/2-before-search.png)
 
 ### Finding F-03 — OS command injection at `/export` (RCE as root) · *owner: Supawan*
 | Field | Value |
@@ -162,7 +166,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `/export` — `subprocess.run("echo exporting notes as " + fmt, shell=True)` |
 | Reproduction | `GET /export?fmt=txt;id` |
 | Impact | Arbitrary command execution as `uid=0(root)` in the container. |
-| Evidence | output contains `uid=0(root) gid=0(root)` — [screenshot](report/person-a/screenshots/3-before-export.png) |
+| Evidence | output contains `uid=0(root) gid=0(root)` (figure below) |
+
+![F-03 before — fmt=txt;id runs id as root](report/person-a/screenshots/3-before-export.png)
 
 ### Finding F-04 — Hard-coded session-signing key · *owner: Phuriphat*
 | Field | Value |
@@ -234,7 +240,12 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `register()`; `users` schema in `seed()` |
 | Reproduction | `POST /register` with `username=c-review&password=testpw&role=admin`, log in, open `/admin` → allowed. Second path: register `admin` again with a new password; the JWT subject is `admin` and `role_of()` returns the original admin's role. |
 | Impact | Anyone can become admin without logging in. |
-| Evidence | Regression tests — [test results](report/person-c/test-results.txt) (baseline fails, fix passes). |
+| Evidence | Regression tests — [test results](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-c/test-results.txt) (baseline fails, fix passes). |
+
+*Before/after browser evidence for F-09 – F-13 was captured with Playwright against the baseline and the integrated `main`, `TEAM_ID=Jikko`; capture method and timestamps: [before-after/README.md](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-c/before-after/README.md).*
+
+![F-09 before — role=admin registration reaches /admin (200)](report/person-c/before-after/registration-before.png)
+![F-09 before — duplicate 'alice' registration accepted (302)](report/person-c/before-after/duplicate-before.png)
 
 ### Finding F-10 — IDOR / BOLA on `/api/notes/<id>` · *owner: Danaiphong*
 | Field | Value |
@@ -246,6 +257,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Log in as `alice`, request `/api/notes/2` → admin's note (`prod db password is hunter2`). |
 | Impact | Any user reads any note by enumerating IDs. |
 
+![F-10 before — alice reads admin's note /api/notes/2 (200)](report/person-c/before-after/ownership-before.png)
+
 ### Finding F-11 — `/admin` returns password hashes · *owner: Danaiphong*
 | Field | Value |
 |---|---|
@@ -255,6 +268,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `admin()` — `SELECT id,username,password,role` |
 | Reproduction | As admin (or via F-09), `GET /admin` → JSON includes every `password` hash. |
 | Impact | Credential material exposed for no functional reason; chains with F-06. |
+
+![F-11 before — /admin returns password hashes](report/person-c/before-after/admin-before.png)
 
 ### Finding F-12 — Stored XSS and server-side template injection · *owner: Danaiphong*
 | Field | Value |
@@ -266,6 +281,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Save a note with body `<img src=x onerror=alert(1)>` → rendered unescaped. Save `{{7*7}}` and search for it → page shows `49`. |
 | Impact | Script in the victim's browser; template expressions evaluated on the server. |
 
+![F-12 before — HTML payload runs as JavaScript](report/person-c/before-after/xss-before.png)
+![F-12 before — {{7*7}} rendered as 49 in search](report/person-c/before-after/template-before.png)
+
 ### Finding F-13 — Flask debug mode enabled · *owner: Danaiphong*
 | Field | Value |
 |---|---|
@@ -276,6 +294,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Any unhandled exception shows the Werkzeug debugger and stack trace. |
 | Impact | Information disclosure; debugger console access if the PIN is obtained. |
 
+![F-13 before — app.run(debug=True)](report/person-c/before-after/debug-before.png)
+
 ### Finding F-14 — Known-vulnerable dependencies · *owner: Sadayu*
 | Field | Value |
 |---|---|
@@ -285,7 +305,7 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `requirements.txt` — Flask 2.0.1, Werkzeug 2.0.1, Jinja2 3.0.1, PyJWT 1.7.1, requests 2.25.1, urllib3 1.26.4 |
 | Reproduction | `trivy fs --scanners vuln --severity HIGH,CRITICAL project/starter-app`; `pip-audit -r requirements.txt` |
 | Impact | Trivy: **16 HIGH/CRITICAL CVEs** (15 HIGH, 1 CRITICAL); pip-audit: **80 advisories in 7 packages** — incl. PyJWT forged-token, Jinja2 sandbox escape, Werkzeug debugger/DoS issues. |
-| Evidence | [trivy-fs.txt](report/person-d/evidence/before/trivy-fs.txt), [pip-audit.txt](report/person-d/evidence/before/pip-audit.txt) |
+| Evidence | [trivy-fs.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/before/trivy-fs.txt), [pip-audit.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/before/pip-audit.txt) |
 
 ![Trivy before — dependency summary](report/person-d/evidence/ci/fig-trivy-before-1-summary-deps.png)
 
@@ -298,7 +318,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `Dockerfile` — `FROM python:3.12`, `ENV APP_SECRET=notevault-dev-secret`, `COPY . .`, no `USER` |
 | Reproduction | `trivy fs --scanners misconfig project/starter-app` → `DS-0002` (HIGH, root), `DS-0031` (CRITICAL, secret in `ENV`). |
 | Impact | Any code-exec bug (F-03) runs as root; the signing key ships in an image layer; the base image can change under the build. |
-| Evidence | [screenshot](report/person-d/evidence/ci/fig-trivy-before-3-dockerfile.png) |
+| Evidence | Trivy misconfig scan of the baseline Dockerfile (figure below) |
+
+![F-15 before — Trivy DS-0002 (root) and DS-0031 (baked secret)](report/person-d/evidence/ci/fig-trivy-before-3-dockerfile.png)
 
 ---
 
@@ -403,6 +425,9 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** the client can no longer choose its role, and the DB rejects a second `admin`. Invalid input → `400`, duplicate → `409`.
 - **Proof:** `role=admin` registration → regular user, `/admin` → `403`; re-registering `admin` → `409`.
 
+![F-09 after — role=admin ignored, /admin 403](report/person-c/before-after/registration-after.png)
+![F-09 after — duplicate username rejected (409)](report/person-c/before-after/duplicate-after.png)
+
 ### Fix for F-10 — owner check · commit `2c5df1b` (Danaiphong)
 ```diff
 - r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ?", (nid,)).fetchone()
@@ -410,12 +435,16 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 ```
 - **Proof:** alice → `/api/notes/1` `200`; `/api/notes/2` and a missing ID both → identical `404`.
 
+![F-10 after — /api/notes/2 returns 404](report/person-c/before-after/ownership-after.png)
+
 ### Fix for F-11 — no hashes in `/admin` · commit `1e605be` (Danaiphong)
 ```diff
 - rows = con.execute("SELECT id,username,password,role FROM users").fetchall()
 + rows = con.execute("SELECT id,username,role FROM users").fetchall()
 ```
 - **Proof:** response objects contain only `id`, `username`, `role`.
+
+![F-11 after — /admin returns only id, username, role](report/person-c/before-after/admin-after.png)
 
 ### Fix for F-12 — fixed templates with autoescape · commit `80cf57a` (Danaiphong)
 ```diff
@@ -429,12 +458,17 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** user data is passed to Jinja as values, never as template source, so it is escaped and never evaluated.
 - **Proof:** `<script>`/`<img>` come back as `&lt;…&gt;`; `{{7*7}}` stays literal.
 
+![F-12 after — payload and {{7*7}} shown as text](report/person-c/before-after/xss-after.png)
+![F-12 after — template expression kept literally](report/person-c/before-after/template-after.png)
+
 ### Fix for F-13 — debug off · commit `af24b72` (Danaiphong)
 ```diff
 - app.run(host="0.0.0.0", port=8080, debug=True)
 + app.run(host="0.0.0.0", port=8080, debug=False, use_debugger=False, use_reloader=False)
 ```
 - **Proof:** test confirms all three are off even with `FLASK_DEBUG=1`.
+
+![F-13 after — debug, debugger and reloader off](report/person-c/before-after/debug-after.png)
 
 ### Fix for F-14 — patched, fully pinned dependencies · commit `c8a2c7d` (Sadayu)
 ```diff
@@ -448,7 +482,7 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 ```
 - **Why:** every flagged package moves to a patched release; unused packages are removed, not patched.
 - **Note:** merging the auth branch re-added `requests==2.25.1` / `urllib3==1.26.4`; this was caught during integration and removed again (keeping `bcrypt`).
-- **Proof:** Trivy → **0**; pip-audit on the final integrated `requirements.txt` → *"No known vulnerabilities found"* ([integrated/pip-audit.txt](report/person-d/evidence/integrated/pip-audit.txt)).
+- **Proof:** Trivy → **0**; pip-audit on the final integrated `requirements.txt` → *"No known vulnerabilities found"* ([integrated/pip-audit.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/integrated/pip-audit.txt)).
 
 ![after — Trivy + pip-audit clean](report/person-d/evidence/ci/fig-after-trivy-pipaudit.png)
 
@@ -474,22 +508,22 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 | Check | Baseline | Integrated code | Evidence |
 |---|---|---|---|
-| Trivy — deps + Dockerfile + secrets (HIGH/CRITICAL) | 16 CVEs + 2 misconfigs | **0** | [trivy-fs.txt](report/person-d/evidence/integrated/trivy-fs.txt) |
-| pip-audit | 80 advisories | **0** | [pip-audit.txt](report/person-d/evidence/integrated/pip-audit.txt) |
-| Semgrep `p/default` + `p/owasp-top-ten` (blocking) | 11 | **0** (6 files scanned) | [semgrep.txt](report/person-d/evidence/integrated/semgrep.txt) |
-| Gitleaks | 0 | **0** | [gitleaks.txt](report/person-d/evidence/integrated/gitleaks.txt) |
-| Regression tests (Danaiphong's suite) | fail (`failures=18, errors=13`) | **17/17 pass** | [unittest.txt](report/person-d/evidence/integrated/unittest.txt) |
+| Trivy — deps + Dockerfile + secrets (HIGH/CRITICAL) | 16 CVEs + 2 misconfigs | **0** | [trivy-fs.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/integrated/trivy-fs.txt) |
+| pip-audit | 80 advisories | **0** | [pip-audit.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/integrated/pip-audit.txt) |
+| Semgrep `p/default` + `p/owasp-top-ten` (blocking) | 11 | **0** (6 files scanned) | [semgrep.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/integrated/semgrep.txt) |
+| Gitleaks | 0 | **0** | [gitleaks.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/integrated/gitleaks.txt) |
+| Regression tests (Danaiphong's suite) | fail (`failures=18, errors=13`) | **17/17 pass** | [unittest.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/evidence/integrated/unittest.txt) |
 
 ---
 
 ## 6. Supply-Chain Hardening  *(15 pts)*
 
-- **SBOM:** [`sbom.json`](report/person-d/sbom/sbom.json) — CycloneDX 1.7, **98 components**,
+- **SBOM:** [`sbom.json`](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/sbom/sbom.json) — CycloneDX 1.7, **98 components**,
   generated from the final integrated image (incl. `bcrypt` from the auth fixes):
   `trivy image --format cyclonedx -o sbom.json notevault:after`. The signed SBOM attestation in
   `cosign/` was made on the earlier supply-chain build (97 components, before `bcrypt` was added).
 - **Signing:** the image is signed by digest with Cosign, and the SBOM is attached as a signed
-  CycloneDX attestation. Public key: [`cosign.pub`](report/person-d/cosign/cosign.pub); the private key is not committed.
+  CycloneDX attestation. Public key: [`cosign.pub`](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/cosign/cosign.pub); the private key is not committed.
   ```
   $ cosign verify --key cosign.pub localhost:5000/notevault@sha256:068f72af…
   Verification for localhost:5000/notevault@sha256:068f72af… --
@@ -497,7 +531,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
     - Existence of the claims in the transparency log was verified offline
     - The signatures were verified against the specified public key
   ```
-  Full output: [verify-output.txt](report/person-d/cosign/verify-output.txt), [verify-attestation.txt](report/person-d/cosign/verify-attestation.txt).
+  Full output: [verify-output.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/cosign/verify-output.txt), [verify-attestation.txt](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/cosign/verify-attestation.txt).
 - **Other controls:** base image pinned by digest; all Python packages pinned including transitive
   ones; GitHub Actions pinned to commit SHAs; Dependabot config in `.github/dependabot.yml`.
 - **SLSA self-assessment — Build L1, with a clear path to L2.** The source is version-controlled,
@@ -511,7 +545,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 ## 7. Security CI Pipeline  *(10 pts)*
 
-- **Workflow:** [`.github/workflows/project-security.yml`](../.github/workflows/project-security.yml),
+- **Workflow:** [`.github/workflows/project-security.yml`](https://github.com/ninacodin/software-security-Jikko/blob/main/.github/workflows/project-security.yml),
   runs on every push/PR that touches `project/starter-app/**`. Three gates:
 
   | Gate | Tool | Fails the build when |
@@ -564,10 +598,10 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 | Member | Workstream | Findings | Working notes & evidence |
 |---|---|---|---|
-| Supawan Kongsapcharoen | Injection & input; DFD + threat model | F-01 – F-03 | [`report/person-a/`](report/person-a/) |
-| Phuriphat Chantiuaong | Auth, session & crypto; first report draft | F-04 – F-08 | [`report/person-b/`](report/person-b/) |
-| Danaiphong Songsikhwa (Bas) | Access control & output; regression tests | F-09 – F-13 | [`report/person-c/`](report/person-c/), [`tests/test_person_c.py`](tests/test_person_c.py) |
-| Sadayu Suriya | Supply chain, Docker, SBOM/Cosign, CI; report assembly & demo | F-14 – F-15 | [`report/person-d/`](report/person-d/) |
+| Supawan Kongsapcharoen | Injection & input; DFD + threat model | F-01 – F-03 | [`report/person-a/`](https://github.com/ninacodin/software-security-Jikko/tree/main/project/report/person-a) |
+| Phuriphat Chantiuaong | Auth, session & crypto; first report draft | F-04 – F-08 | [`report/person-b/`](https://github.com/ninacodin/software-security-Jikko/tree/main/project/report/person-b) |
+| Danaiphong Songsikhwa (Bas) | Access control & output; regression tests | F-09 – F-13 | [`report/person-c/`](https://github.com/ninacodin/software-security-Jikko/tree/main/project/report/person-c), [`tests/test_person_c.py`](https://github.com/ninacodin/software-security-Jikko/blob/main/project/tests/test_person_c.py) |
+| Sadayu Suriya | Supply chain, Docker, SBOM/Cosign, CI; report assembly & demo | F-14 – F-15 | [`report/person-d/`](https://github.com/ninacodin/software-security-Jikko/tree/main/project/report/person-d) |
 
 ### B. Finding ID cross-reference
 
@@ -581,7 +615,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
 ### C. Demo video
 
 - Video: https://drive.google.com/file/d/1p1VaYSBLEyaE_H08RNnwhlAP4eWR8UqU/view
-- Script: [`report/person-d/demo-script.md`](report/person-d/demo-script.md)
+- Script: [`report/person-d/demo-script.md`](https://github.com/ninacodin/software-security-Jikko/blob/main/project/report/person-d/demo-script.md)
 
 ### D. Tools
 

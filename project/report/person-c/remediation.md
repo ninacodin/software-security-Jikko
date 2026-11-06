@@ -1,4 +1,4 @@
-# Findings และ Remediation — ส่วนคน C
+# Findings และ Remediation — ส่วนของ Danaiphong
 
 เอกสารร่างสำหรับรวมรายงาน §4–5 ของทีม ข้อสรุปก่อนแก้มาจาก `project/starter-app/app.py` ณ commit `0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c` ระดับความรุนแรงเป็นการประเมินตามผลกระทบในแอปตัวอย่าง ไม่ใช่ CVSS ที่คำนวณแล้ว
 
@@ -168,7 +168,7 @@ git log --oneline --grep='F-C'
 git diff 0edc2a3e01c9ac62a6e2c677b65f9a9085b2c45c -- project/starter-app/app.py
 ```
 
-ในรายงานแต่ละ finding ต้องมี hash จากประวัติจริงพร้อม diff และหลักฐานหลังแก้ ไม่ใช้ hash ของ baseline แทน commit แพตช์ ขณะรวม §5 ของทั้งทีมให้ตรวจ finding↔commit↔ภาพหลักฐานตรงกัน รวมถึงงานของ A/B/D ที่ยังไม่ได้อยู่ในเอกสารนี้
+ในรายงานแต่ละ finding ต้องมี hash จากประวัติจริงพร้อม diff และหลักฐานหลังแก้ ไม่ใช้ hash ของ baseline แทน commit แพตช์ ขณะรวม §5 ของทั้งทีมให้ตรวจ finding↔commit↔ภาพหลักฐานตรงกัน รวมถึงงานของ Supawan, Phuriphat และ Sadayu ที่ยังไม่ได้อยู่ในเอกสารนี้
 
 ## ข้อจำกัดการสรุปผลทั้งทีม
 

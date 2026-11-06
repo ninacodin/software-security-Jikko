@@ -1,16 +1,16 @@
 # AI-tool Usage Disclosure — Team Jikko
 
-> Goes into the report's "AI-tool usage disclosure" section. Academic integrity: state honestly
-> how AI tools were used. **Each member fills their own rows** — the entries below are Supawan's
-> (Person A); Phuriphat / Danaiphong / Sadayu must add theirs. Edit to match what actually happened; do not under- or
-> over-state. "None" is a valid answer for a row.
+> The submitted version of this table is in [`../REPORT.md`](../REPORT.md) → *AI-tool usage disclosure*;
+> keep the two in sync. Academic integrity: state honestly how AI tools were used. **Each member owns
+> their own row** — edit it to match what actually happened; do not under- or over-state. "None" is a
+> valid answer for a row.
 
-| Tool | How it was used |
-|---|---|
-| Claude (Claude Code, Opus) — **Supawan** | Drafting the threat model (DFD + STRIDE, §2–3); writing up the 3 injection findings (§4) and remediation explanations (§5); reviewing the parameterized-query and `shell=False` fixes; **running the before/after exploit verification in Docker** and capturing the results; generating the DFD diagram (SVG); organising the report sections; and guidance on PowerShell / Git / Docker commands and Thai–English explanation. All AI output was read, **verified by running**, and edited by the author before use; the author can explain every fix and payload unaided. |
-| Claude / other AI — **Phuriphat** | *(fill in: e.g. drafting auth/session/crypto findings, researching JWT `none` / CWE-347, etc. — or "None")* |
-| Claude / other AI — **Danaiphong** | *(fill in: access-control / XSS findings, IDOR research, etc. — or "None")* |
-| Claude / other AI — **Sadayu** | *(fill in: SBOM/Cosign commands, GitHub Actions CI drafting, dependency-CVE lookup, etc. — or "None")* |
+| Member | Tool | How it was used |
+|---|---|---|
+| Supawan | Claude (Claude Code, Opus) | Drafting the threat model (DFD + STRIDE, §2–3); writing up the 3 injection findings (§4) and remediation explanations (§5); reviewing the parameterized-query and `shell=False` fixes; **running the before/after exploit verification in Docker** and capturing the results; generating the DFD diagram (SVG); organising the report sections; and guidance on PowerShell / Git / Docker commands and Thai–English explanation. All AI output was read, **verified by running**, and edited by the author before use; the author can explain every fix and payload unaided. |
+| Phuriphat | Claude Code | Reviewed the code, implemented and tested the auth/session/crypto fixes (F-04 – F-08), drafted the first report skeleton. All fixes reviewed and run by the member. |
+| Danaiphong | Codex | Reviewed the access-control code, proposed patches and the regression test suite, drafted notes. The member checked the results and explains the fixes in their own words. |
+| Sadayu | Claude Code | Helped run Trivy / pip-audit / Cosign, write the Dockerfile and CI workflow, and merge the four members' sections into the report. All tool output in `person-d/evidence/` comes from real runs. |
 
 **Honesty notes (read before submitting):**
 - If AI helped **write the actual fix code** (not just the report), say so in the row — don't hide it.
