@@ -1,4 +1,4 @@
-# Team Jikko — Supply-Chain & Build/CI (Person D)
+# Team Jikko — Supply-Chain & Build/CI (Sadayu Suriya)
 
 Deliverables for sections **§6 (supply-chain hardening)** and **§7 (security CI)**
 of the term-project report, plus the dependency/Dockerfile remediation.
@@ -52,5 +52,5 @@ Three gates, fail on HIGH/CRITICAL:
 ## Live CI runs (for the §7 screenshot)
 - Baseline, Trivy **fails** on HIGH/CRITICAL:
   https://github.com/ninacodin/software-security-Jikko/actions/runs/39839508883
-- After Person-D fixes, Trivy **passes**:
+- After Sadayu's fixes, Trivy **passes**:
   https://github.com/ninacodin/software-security-Jikko/actions/runs/39839516007

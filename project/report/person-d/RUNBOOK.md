@@ -1,4 +1,4 @@
-# Runbook — reproduce the Person D artifacts
+# Runbook — reproduce Sadayu's supply-chain artifacts
 
 All commands run from the repo root on Windows (PowerShell). Tools that aren't
 installed locally are run via their official Docker images. `cosign` is native.

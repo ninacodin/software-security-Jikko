@@ -1,4 +1,4 @@
-"""Person C security regressions. All writes use disposable test databases.
+"""Access-control & output security regressions (Danaiphong). All writes use disposable test databases.
 
 Run from the repository root:
     python -m unittest discover -s project/tests -p 'test_person_c.py' -v

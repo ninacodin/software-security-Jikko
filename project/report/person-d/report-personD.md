@@ -1,6 +1,6 @@
-# Report content — Person D (Supply-Chain & Build/CI)
+# Report content — Sadayu (Supply-Chain & Build/CI)
 
-Ready to paste into `project/REPORT-TEMPLATE.md`. Covers the two Person-D findings
+Ready to paste into `project/REPORT-TEMPLATE.md`. Covers the two supply-chain findings
 (§4/§5), supply-chain hardening (§6), and the CI pipeline (§7). All numbers come
 from running the tools; raw output is under `evidence/`, `sbom/`, `cosign/`.
 
@@ -10,7 +10,7 @@ from running the tools; raw output is under `evidence/`, `sbom/`, `cosign/`.
 
 ---
 
-## §4 — Findings (Person D's two)
+## §4 — Findings (Sadayu's two)
 
 ### Finding F-D1 — Vulnerable & outdated dependencies
 | Field | Value |
@@ -124,10 +124,10 @@ from running the tools; raw output is under `evidence/`, `sbom/`, `cosign/`.
   - **Secrets** — Gitleaks `dir` over the app only (`--no-git`), pinned v8.24.3.
 - **Proof the gate fails on HIGH/CRITICAL** — two real runs:
 
-  | Job | Baseline (vulnerable) | After Person-D fixes |
+  | Job | Baseline (vulnerable) | After Sadayu's fixes |
   |---|---|---|
   | Trivy (SCA + misconfig) | 🔴 **failure** — HIGH/CRIT deps + Dockerfile | 🟢 success |
-  | Semgrep (SAST) | 🔴 failure — app-code vulns (owned by A–C) | 🔴 failure (pending A–C) |
+  | Semgrep (SAST) | 🔴 failure — app-code vulns (owned by Supawan, Phuriphat, Danaiphong) | 🔴 failure (pending their fixes) |
   | Gitleaks | 🟢 success | 🟢 success |
 
   - Baseline run (Trivy red): `https://github.com/ninacodin/software-security-Jikko/actions/runs/39839508883`

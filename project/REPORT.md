@@ -31,8 +31,8 @@ NoteVault is a small Flask web app and JSON API. Users register, log in (JWT in 
 and search their own notes, and export them; an admin can list all users. It worked end-to-end
 but had never been security-reviewed.
 
-The team split the review into four workstreams — **A** injection & input, **B** authentication,
-session & crypto, **C** access control & output, **D** supply chain & build/CI — and found
+The team split the review into four workstreams — injection & input (Supawan), authentication,
+session & crypto (Phuriphat), access control & output (Danaiphong), supply chain & build/CI (Sadayu) — and found
 **15 vulnerabilities**:
 
 | Severity | Count | Findings |
@@ -236,6 +236,11 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Impact | Anyone can become admin without logging in. |
 | Evidence | Regression tests — [test results](report/person-c/test-results.txt) (baseline fails, fix passes). |
 
+*Before/after browser evidence for F-09 – F-13 was captured with Playwright against the baseline and the integrated `main`, `TEAM_ID=Jikko`; capture method and timestamps: [before-after/README.md](report/person-c/before-after/README.md).*
+
+![F-09 before — role=admin registration reaches /admin (200)](report/person-c/before-after/registration-before.png)
+![F-09 before — duplicate 'alice' registration accepted (302)](report/person-c/before-after/duplicate-before.png)
+
 ### Finding F-10 — IDOR / BOLA on `/api/notes/<id>` · *owner: Danaiphong*
 | Field | Value |
 |---|---|
@@ -245,6 +250,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `api_note()` — selects by `id` only |
 | Reproduction | Log in as `alice`, request `/api/notes/2` → admin's note (`prod db password is hunter2`). |
 | Impact | Any user reads any note by enumerating IDs. |
+
+![F-10 before — alice reads admin's note /api/notes/2 (200)](report/person-c/before-after/ownership-before.png)
 
 ### Finding F-11 — `/admin` returns password hashes · *owner: Danaiphong*
 | Field | Value |
@@ -256,6 +263,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | As admin (or via F-09), `GET /admin` → JSON includes every `password` hash. |
 | Impact | Credential material exposed for no functional reason; chains with F-06. |
 
+![F-11 before — /admin returns password hashes](report/person-c/before-after/admin-before.png)
+
 ### Finding F-12 — Stored XSS and server-side template injection · *owner: Danaiphong*
 | Field | Value |
 |---|---|
@@ -266,6 +275,9 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Reproduction | Save a note with body `<img src=x onerror=alert(1)>` → rendered unescaped. Save `{{7*7}}` and search for it → page shows `49`. |
 | Impact | Script in the victim's browser; template expressions evaluated on the server. |
 
+![F-12 before — HTML payload runs as JavaScript](report/person-c/before-after/xss-before.png)
+![F-12 before — {{7*7}} rendered as 49 in search](report/person-c/before-after/template-before.png)
+
 ### Finding F-13 — Flask debug mode enabled · *owner: Danaiphong*
 | Field | Value |
 |---|---|
@@ -275,6 +287,8 @@ OWASP categories use the **Top 10:2025** numbering. "Owner" is the member who fo
 | Location | `app.py` `app.run(..., debug=True)` |
 | Reproduction | Any unhandled exception shows the Werkzeug debugger and stack trace. |
 | Impact | Information disclosure; debugger console access if the PIN is obtained. |
+
+![F-13 before — app.run(debug=True)](report/person-c/before-after/debug-before.png)
 
 ### Finding F-14 — Known-vulnerable dependencies · *owner: Sadayu*
 | Field | Value |
@@ -403,6 +417,9 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** the client can no longer choose its role, and the DB rejects a second `admin`. Invalid input → `400`, duplicate → `409`.
 - **Proof:** `role=admin` registration → regular user, `/admin` → `403`; re-registering `admin` → `409`.
 
+![F-09 after — role=admin ignored, /admin 403](report/person-c/before-after/registration-after.png)
+![F-09 after — duplicate username rejected (409)](report/person-c/before-after/duplicate-after.png)
+
 ### Fix for F-10 — owner check · commit `2c5df1b` (Danaiphong)
 ```diff
 - r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ?", (nid,)).fetchone()
@@ -410,12 +427,16 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 ```
 - **Proof:** alice → `/api/notes/1` `200`; `/api/notes/2` and a missing ID both → identical `404`.
 
+![F-10 after — /api/notes/2 returns 404](report/person-c/before-after/ownership-after.png)
+
 ### Fix for F-11 — no hashes in `/admin` · commit `1e605be` (Danaiphong)
 ```diff
 - rows = con.execute("SELECT id,username,password,role FROM users").fetchall()
 + rows = con.execute("SELECT id,username,role FROM users").fetchall()
 ```
 - **Proof:** response objects contain only `id`, `username`, `role`.
+
+![F-11 after — /admin returns only id, username, role](report/person-c/before-after/admin-after.png)
 
 ### Fix for F-12 — fixed templates with autoescape · commit `80cf57a` (Danaiphong)
 ```diff
@@ -429,12 +450,17 @@ Every fix is a separate commit. All of them are merged into `main`; the combined
 - **Why:** user data is passed to Jinja as values, never as template source, so it is escaped and never evaluated.
 - **Proof:** `<script>`/`<img>` come back as `&lt;…&gt;`; `{{7*7}}` stays literal.
 
+![F-12 after — payload and {{7*7}} shown as text](report/person-c/before-after/xss-after.png)
+![F-12 after — template expression kept literally](report/person-c/before-after/template-after.png)
+
 ### Fix for F-13 — debug off · commit `af24b72` (Danaiphong)
 ```diff
 - app.run(host="0.0.0.0", port=8080, debug=True)
 + app.run(host="0.0.0.0", port=8080, debug=False, use_debugger=False, use_reloader=False)
 ```
 - **Proof:** test confirms all three are off even with `FLASK_DEBUG=1`.
+
+![F-13 after — debug, debugger and reloader off](report/person-c/before-after/debug-after.png)
 
 ### Fix for F-14 — patched, fully pinned dependencies · commit `c8a2c7d` (Sadayu)
 ```diff
