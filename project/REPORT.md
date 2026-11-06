@@ -2,8 +2,6 @@
 
 > Team report for **NoteVault** (`project/starter-app/`), following `REPORT-TEMPLATE.md`.
 > Each member's raw working notes and evidence live under [`report/`](report/) (see Appendix A).
->
-> `<!-- TODO -->` marks the few items only the team can fill in (student IDs, video link).
 
 ## Cover
 
@@ -13,6 +11,7 @@
 | Members (name + ID) | Supawan Kongsapcharoen — 6631503042 · Phuriphat Chantiuaong — 6631503034 · Danaiphong Songsikhwa — 6631503106 · Sadayu Suriya — 6631503040 |
 | Target application | NoteVault (`project/starter-app/`) |
 | Repository URL | https://github.com/ninacodin/software-security-Jikko |
+| Demo video | https://drive.google.com/file/d/1p1VaYSBLEyaE_H08RNnwhlAP4eWR8UqU/view |
 | Date | 2026-10-30 |
 
 ## AI-tool usage disclosure
@@ -485,8 +484,10 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 ## 6. Supply-Chain Hardening  *(15 pts)*
 
-- **SBOM:** [`sbom.json`](report/person-d/sbom/sbom.json) — CycloneDX 1.7, **97 components**,
-  generated from the built image: `trivy image --format cyclonedx -o sbom.json starter-app-notevault:latest`.
+- **SBOM:** [`sbom.json`](report/person-d/sbom/sbom.json) — CycloneDX 1.7, **98 components**,
+  generated from the final integrated image (incl. `bcrypt` from the auth fixes):
+  `trivy image --format cyclonedx -o sbom.json notevault:after`. The signed SBOM attestation in
+  `cosign/` was made on the earlier supply-chain build (97 components, before `bcrypt` was added).
 - **Signing:** the image is signed by digest with Cosign, and the SBOM is attached as a signed
   CycloneDX attestation. Public key: [`cosign.pub`](report/person-d/cosign/cosign.pub); the private key is not committed.
   ```
@@ -579,7 +580,7 @@ Every check below was re-run on the combined code, with the same settings as CI:
 
 ### C. Demo video
 
-- Video: `<!-- TODO: link -->`
+- Video: https://drive.google.com/file/d/1p1VaYSBLEyaE_H08RNnwhlAP4eWR8UqU/view
 - Script: [`report/person-d/demo-script.md`](report/person-d/demo-script.md)
 
 ### D. Tools
